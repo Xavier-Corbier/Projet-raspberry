@@ -10,6 +10,7 @@ def affichage(stdscr):
 
         while boolCondition:
 
+
             # Affichage du titre du chat
             titre = 'Chat'
 
@@ -45,6 +46,7 @@ def affichage(stdscr):
             rectangle(stdscr, messageZone_uly, messageZone_ulx, messageZone_lry, messageZone_lrx)
             stdscr.addstr(messageZone_uly+1, 4, 'Ecrire un message :')
 
+            #stdscr.clear()
             stdscr.refresh()
 
 def lectureMessage(stdscr):
@@ -60,9 +62,8 @@ def lectureMessage(stdscr):
 
             box = Textbox(messageZon)
             box.edit(verificationClavier)
-
             message = box.gather()
-            fichier = open("messages.txt", "a")
+            fichier = open("messages.txt", "a+")
             fichier.write("user : "+message+"\n")
             fichier.close()
             message =""
