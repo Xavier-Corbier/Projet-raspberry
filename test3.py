@@ -222,7 +222,8 @@ class Chat(object):
             if nombreSupprime == 0:
                 if user.split("\n")[0]!=self.nickname and user !="":
                     fichier.write(user+"\n")
-                nombreSupprime +=1
+                else :
+                    nombreSupprime +=1
             else :
                 if user !="":
                     fichier.write(user+"\n")
