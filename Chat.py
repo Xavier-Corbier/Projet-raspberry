@@ -13,6 +13,10 @@ class Chat(object):
         # récupération des dimensions
         self.maxY, self.maxX = fenetre.getmaxyx()
 
+        # connexion aux données des appli de Messages et Utilisateurs
+        self.appMessages = appMessage.Messages()
+        self.appUtilisateurs = appUtilisateurs.Utilisateurs()
+
     ##
     #   PARTIE INITIALISATION
     ##
@@ -32,23 +36,29 @@ class Chat(object):
     def initialisationAffichage(self):
 
         # finY, finX, y, x
-        self.titreFenetre = curses.newwin(1, self.maxX, 0, 0)
-        self.utilisateurFenetre = curses.newwin(self.maxY - 1,int(self.maxX * 0.25),1,0)
-        self.chatFenetre = curses.newwin(self.maxY - int(self.maxY * 0.1) - 1,self.maxX - int(self.maxX * 0.25),1,int(self.maxX * 0.25))
-        self.texteFenetre = curses.newwin(int(self.maxY * 0.1),self.maxX - int(self.maxX * 0.25),self.maxY - int(self.maxY * 0.1),int(self.maxX * 0.25))
 
-        self.utilisateurZone = curses.newwin(self.maxY - 4,int(self.maxX * 0.25)-3,3,1)
-        self.chatZone = curses.newwin(self.maxY - int(self.maxY * 0.1) - 3,self.maxX - int(self.maxX * 0.25) - 2,2,int(self.maxX * 0.25) + 1)
-        self.texteZone = curses.newwin(int(self.maxY * 0.1) - 2,self.maxX - int(self.maxX * 0.25) - 2,self.maxY - int(self.maxY * 0.1) + 1,int(self.maxX * 0.25) + 1)
+        try :
+            self.titreFenetre = curses.newwin(1, self.maxX, 0, 0)
+            self.utilisateurFenetre = curses.newwin(self.maxY - 1,int(self.maxX * 0.25),1,0)
+            self.chatFenetre = curses.newwin(self.maxY - int(self.maxY * 0.1) - 1,self.maxX - int(self.maxX * 0.25),1,int(self.maxX * 0.25))
+            self.texteFenetre = curses.newwin(int(self.maxY * 0.1),self.maxX - int(self.maxX * 0.25),self.maxY - int(self.maxY * 0.1),int(self.maxX * 0.25))
 
-        self.initTitre()
-        self.initChat()
-        self.initChatZone()
-        self.initTexte()
-        self.initTexteZone()
-        self.initUtilisateur()
+            self.utilisateurZone = curses.newwin(self.maxY - 4,int(self.maxX * 0.25)-3,3,1)
+            self.chatZone = curses.newwin(self.maxY - int(self.maxY * 0.1) - 3,self.maxX - int(self.maxX * 0.25) - 2,2,int(self.maxX * 0.25) + 1)
+            self.texteZone = curses.newwin(int(self.maxY * 0.1) - 2,self.maxX - int(self.maxX * 0.25) - 2,self.maxY - int(self.maxY * 0.1) + 1,int(self.maxX * 0.25) + 1)
 
-        self.effacer()
+            self.initTitre()
+            self.initChat()
+            self.initChatZone()
+            self.initTexte()
+            self.initTexteZone()
+            self.initUtilisateur()
+
+            self.effacer()
+
+        except Exception :
+            self.stoper()
+            print("Erreur : les dimensions du terminal sont trop faibles")
 
     def initTitre(self):
         name = "Chat"
@@ -94,10 +104,15 @@ class Chat(object):
         self.utilisateurZone.clear()
         self.utilisateurIndice = 0
 
-        listeUtilisateurs = appUtilisateurs.listeDesUtilisateurs()
+        listeUtilisateurs = self.appUtilisateurs.listeDesUtilisateurs()
 
         for user in listeUtilisateurs :
-            self.utilisateurZone.addstr(self.utilisateurIndice+3, 1, user)
+            try:
+                self.utilisateurZone.addstr(self.utilisateurIndice+3, 1, user)
+
+            except Exception :
+                pass
+
             self.utilisateurIndice+=1
 
         self.utilisateurZone.refresh()
@@ -139,15 +154,15 @@ class Chat(object):
     def recupererMessages(self):
 
         while self.actif:
-            listeMessage = appMessage.listeDesMessages()
+            listeMessage = self.appMessages.listeDesMessages()
 
             if self.messageNombre + self.messageNombreHistorique < len(listeMessage)-1 :
-                message = listeMessage[self.messageNombre + self.messageNombreHistorique].split(":")
+                message = listeMessage[self.messageNombre + self.messageNombreHistorique]
                 self.afficherMessage(message[0],message[1])
                 self.messageNombre+=1
 
     def envoyerMessage(self):
-        appMessage.envoyerMessage(self.nomUtilisateur,self.text)
+        self.appMessages.envoyerMessage(self.nomUtilisateur,self.text)
         self.text = ""
         self.texteZone.clear()
         self.rechargementTexteZone()
@@ -174,16 +189,16 @@ class Chat(object):
     def recupererUtilisateurs(self):
 
         while self.actif:
-            listeUtilisateurs=appUtilisateurs.listeDesUtilisateurs()
+            listeUtilisateurs=self.appUtilisateurs.listeDesUtilisateurs()
 
             if self.utilisateurIndice != len(listeUtilisateurs) :
                 self.rechargementUtilisateur()
 
     def ajouterUtilisateur(self):
-        appUtilisateurs.ajouterUtilisateur(self.nomUtilisateur)
+        self.appUtilisateurs.ajouterUtilisateur(self.nomUtilisateur)
 
     def supprimerUtilisateur(self):
-        appUtilisateurs.supprimerUtilisateur(self.nomUtilisateur)
+        self.appUtilisateurs.supprimerUtilisateur(self.nomUtilisateur)
 
     ##
     #   PARTIE ACTIVITE PROGRAMME
@@ -195,7 +210,7 @@ class Chat(object):
             caractere = self.texteFenetre.getch()
             self.message(caractere)
 
-    def stoper(self):
+    def stoper(self,signum=None, frame=None):
 
         self.actif=False
         self.supprimerUtilisateur()
