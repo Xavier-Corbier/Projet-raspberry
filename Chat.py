@@ -27,7 +27,7 @@ class Chat(object):
         # Pas de répétition des caractères au clavier
         curses.noecho()
         curses.cbreak()
-
+        self.stdscr.nodelay(0)
         # Récupération du caractère pour supprimer
         self.charSuppression = curses.erasechar()
 
@@ -130,16 +130,13 @@ class Chat(object):
 
         if self.actif :
 
-            if chr(char) == "\n":
+            if chr(char) == "\n" or char == 000:
 
                 if self.text == ":changerNom" :
                     self.stoper()
+
                     option = curses.wrapper(appOption.Option)
-
-                    signal.signal(signal.SIGINT, option.stoper)
-
                     option.initialisation("Changement de pseudo :")
-
                     reponse = option.lancer()
 
                     if reponse != "" :
@@ -155,19 +152,40 @@ class Chat(object):
 
                 elif self.text == ":p" :
                     self.nombreMessageRemoter +=1
-                    self.rechargementChat()
-
-                    self.messageNombre = 1
-                    self.messageNombreHistorique = 1
-
+                    self.chatZone.erase()
+                    self.chatZone.refresh()
+                    self.chatIndice = 0
+                    self.messageNombre = 0
+                    self.messageNombreHistorique = 0
                     self.text = ""
-                    self.texteZone.clear()
-                    self.rechargementTexteZone()
+                    self.texteZone.erase()
+                    self.texteZone.refresh()
 
+                elif self.text == ":s" :
+                    if self.nombreMessageRemoter > 0:
+                        self.nombreMessageRemoter -=1
+                    self.chatZone.erase()
+                    self.chatZone.refresh()
+                    self.chatIndice = 0
+                    self.messageNombre = 0
+                    self.messageNombreHistorique = 0
+                    self.text = ""
+                    self.texteZone.erase()
+                    self.texteZone.refresh()
                 else :
-                    self.messageNombre += 1
-                    self.afficherMessage(self.nomUtilisateur,self.text)
-                    self.envoyerMessage()
+
+                    if self.nombreMessageRemoter != 0:
+                        self.nombreMessageRemoter =0
+                        self.chatZone.erase()
+                        self.chatZone.refresh()
+                        self.chatIndice = 0
+                        self.messageNombre = 0
+                        self.messageNombreHistorique = 0
+
+                    else :
+                        self.messageNombre += 1
+                        self.afficherMessage(self.nomUtilisateur,self.text)
+                        self.envoyerMessage()
 
                 return
 
@@ -192,8 +210,11 @@ class Chat(object):
         while self.actif:
             listeMessage = self.appMessages.listeDesMessages()
 
-            if self.messageNombre + self.messageNombreHistorique + self.nombreMessageRemoter < len(listeMessage)-1 :
-                message = listeMessage[self.messageNombre + self.messageNombreHistorique]
+            if self.messageNombre + self.messageNombreHistorique < len(listeMessage)-1 :
+                if self.messageNombre + self.messageNombreHistorique - self.nombreMessageRemoter < 0 :
+                    message = ["Attention "," il n'y a pas de message plus ancien"]
+                else :
+                    message = listeMessage[self.messageNombre + self.messageNombreHistorique - self.nombreMessageRemoter]
                 self.afficherMessage(message[0],message[1])
                 self.messageNombre+=1
 
@@ -206,13 +227,12 @@ class Chat(object):
     def afficherMessage(self,utilisateur,chat):
 
         try:
-            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : ')
+            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : ' + str(chat))
 
         except Exception:
             self.rechargementChat()
-            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : ')
+            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : '+ str(chat))
 
-        self.chatZone.addstr(chat)
         self.chatZone.refresh()
 
         self.chatIndice = self.chatZone.getyx()[0]

@@ -1,4 +1,4 @@
-import curses,os,threading,curses.textpad
+import curses,os,threading,curses.textpad,signal
 
 class Option(object):
 
@@ -74,6 +74,8 @@ class Option(object):
         self.rechargementTexteZone()
 
     def lancer(self):
+
+        signal.signal(signal.SIGINT, self.stoper)
 
         while self.actif:
             caractere = self.texteZone.getch()
