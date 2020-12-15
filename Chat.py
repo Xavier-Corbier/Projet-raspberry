@@ -1,6 +1,7 @@
-import curses,os,threading,curses.textpad
+import curses,os,threading,curses.textpad,signal
 import Utilisateurs as appUtilisateurs
 import Messages as appMessage
+import Option as appOption
 
 class Chat(object):
 
@@ -8,7 +9,7 @@ class Chat(object):
 
         self.stdscr = fenetre
         self.nomUtilisateur = ""
-        self.actif = True
+        self.nombreMessageRemoter = 0
 
         # récupération des dimensions
         self.maxY, self.maxX = fenetre.getmaxyx()
@@ -26,7 +27,7 @@ class Chat(object):
         # Pas de répétition des caractères au clavier
         curses.noecho()
         curses.cbreak()
-
+        self.stdscr.nodelay(0)
         # Récupération du caractère pour supprimer
         self.charSuppression = curses.erasechar()
 
@@ -128,11 +129,64 @@ class Chat(object):
     def message(self, char):
 
         if self.actif :
-            if chr(char) == "\n":
 
-                self.messageNombre += 1
-                self.afficherMessage(self.nomUtilisateur,self.text)
-                self.envoyerMessage()
+            if chr(char) == "\n" or char == 000:
+
+                if self.text == ":changerNom" :
+                    self.stoper()
+
+                    option = curses.wrapper(appOption.Option)
+                    option.initialisation("Changement de pseudo :")
+                    reponse = option.lancer()
+
+                    if reponse != "" :
+                        self.nomUtilisateur = reponse
+
+                    self.lancer()
+
+                elif self.text == ":effacerEcran" :
+                    self.rechargementChat()
+                    self.text = ""
+                    self.texteZone.clear()
+                    self.rechargementTexteZone()
+
+                elif self.text == ":p" :
+                    self.nombreMessageRemoter +=1
+                    self.chatZone.erase()
+                    self.chatZone.refresh()
+                    self.chatIndice = 0
+                    self.messageNombre = 0
+                    self.messageNombreHistorique = 0
+                    self.text = ""
+                    self.texteZone.erase()
+                    self.texteZone.refresh()
+
+                elif self.text == ":s" :
+                    if self.nombreMessageRemoter > 0:
+                        self.nombreMessageRemoter -=1
+                    self.chatZone.erase()
+                    self.chatZone.refresh()
+                    self.chatIndice = 0
+                    self.messageNombre = 0
+                    self.messageNombreHistorique = 0
+                    self.text = ""
+                    self.texteZone.erase()
+                    self.texteZone.refresh()
+                else :
+
+                    if self.nombreMessageRemoter != 0:
+                        self.nombreMessageRemoter =0
+                        self.chatZone.erase()
+                        self.chatZone.refresh()
+                        self.chatIndice = 0
+                        self.messageNombre = 0
+                        self.messageNombreHistorique = 0
+
+                    else :
+                        self.messageNombre += 1
+                        self.afficherMessage(self.nomUtilisateur,self.text)
+                        self.envoyerMessage()
+
                 return
 
             elif chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
@@ -157,7 +211,10 @@ class Chat(object):
             listeMessage = self.appMessages.listeDesMessages()
 
             if self.messageNombre + self.messageNombreHistorique < len(listeMessage)-1 :
-                message = listeMessage[self.messageNombre + self.messageNombreHistorique]
+                if self.messageNombre + self.messageNombreHistorique - self.nombreMessageRemoter < 0 :
+                    message = ["Attention "," il n'y a pas de message plus ancien"]
+                else :
+                    message = listeMessage[self.messageNombre + self.messageNombreHistorique - self.nombreMessageRemoter]
                 self.afficherMessage(message[0],message[1])
                 self.messageNombre+=1
 
@@ -170,13 +227,12 @@ class Chat(object):
     def afficherMessage(self,utilisateur,chat):
 
         try:
-            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : ')
+            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : ' + str(chat))
 
         except Exception:
             self.rechargementChat()
-            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : ')
+            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : '+ str(chat))
 
-        self.chatZone.addstr(chat)
         self.chatZone.refresh()
 
         self.chatIndice = self.chatZone.getyx()[0]
@@ -205,6 +261,15 @@ class Chat(object):
     ##
 
     def lancer(self):
+
+        self.actif = True
+
+        self.initialisation()
+
+        threading.Thread(target=self.recupererMessages).start()
+        threading.Thread(target=self.recupererUtilisateurs).start()
+
+        signal.signal(signal.SIGINT, self.stoper)
 
         while self.actif:
             caractere = self.texteFenetre.getch()
