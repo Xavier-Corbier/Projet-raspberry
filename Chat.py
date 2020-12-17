@@ -26,6 +26,8 @@ class Chat(object):
         # Pas de répétition des caractères au clavier
         curses.noecho()
         curses.cbreak()
+        self.stdscr.keypad(True)
+
 
         # Récupération du caractère pour supprimer
         self.charSuppression = curses.erasechar()
@@ -128,7 +130,26 @@ class Chat(object):
     def message(self, char):
 
         if self.actif :
-            if chr(char) == "\n":
+            if char == ord('$'):
+                self.stdscr.clear()
+            # raccourciclavier pour envoyer un message
+            elif char == ord('!'):
+                self.envoyerMessage()
+            elif char == curses.KEY_UP:
+                var = True
+                afficherMessage(self, utilisateur, chat)
+                var = False
+            elif char == ord('b'):
+                for i in range(9780, 9801):
+                    self.text += chr(i)
+                    self.rechargementTexteZone()
+                    
+            elif char == curses.KEY_RIGHT:
+                k = k + 1
+            #raccourciclavier pour quitter
+            elif char == ord(':'):
+                self.stoper()
+            elif chr(char) == "\n":
 
                 self.messageNombre += 1
                 self.afficherMessage(self.nomUtilisateur,self.text)
@@ -213,6 +234,8 @@ class Chat(object):
     def stoper(self,signum=None, frame=None):
 
         self.actif=False
+        self.stdscr.keypad(False)
+
         self.supprimerUtilisateur()
 
         curses.echo()
