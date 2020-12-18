@@ -8,14 +8,12 @@ class Chat(object):
 
         self.stdscr = fenetre
         self.nomUtilisateur = ""
-
-        # récupération des dimensions
+        # Récupération des dimensions
         self.maxY, self.maxX = fenetre.getmaxyx()
-
-        # connexion aux données des appli de gestion de Messages et Utilisateurs
+        # Connexion aux données des appli de gestion de Messages et Utilisateurs
         self.gestionMessages = pgm.GestionMessages()
         self.gestionUtilisateurs = pgu.GestionUtilisateurs()
-
+        # Création du mutex
         self.mutex=threading.Lock()
 
     ##
@@ -27,13 +25,12 @@ class Chat(object):
         # Pas de répétition des caractères au clavier
         curses.noecho()
         curses.cbreak()
-
         # Pas de delai à l'affichage
         self.stdscr.nodelay(0)
         # Récupération du caractère pour supprimer
         self.charSuppression = curses.erasechar()
+        # Ne pas afficher de curseurs à l'écran
         curses.curs_set(0)
-
         curses.doupdate()
         # Mise en place de l'affichage
         self.initialisationAffichage()
@@ -53,25 +50,24 @@ class Chat(object):
             self.utilisateurZone = curses.newwin(self.maxY - 4,int(self.maxX * 0.25)-3,3,1)
             self.chatZone = curses.newwin(self.maxY - int(self.maxY * 0.1) - 3,self.maxX - int(self.maxX * 0.25) - 2,2,int(self.maxX * 0.25) + 1)
             self.texteZone = curses.newwin(1,self.maxX - int(self.maxX * 0.25) - 2,self.maxY - int(self.maxY * 0.1) + 1,int(self.maxX * 0.25) + 1)
-
-            # Initialisation de chaques parties de l'écran
-            self.initTitre()
-            self.initChat()
-            self.initTexte()
-            self.initUtilisateur()
-
-
-            self.text="initialisation"
-            self.envoyerMessage()
         except Exception :
-            # Si les dimensions de l'écran sont trop faibles
             self.stoper()
             print("Erreur : les dimensions du terminal sont trop faibles")
+
+        # Initialisation de chaques parties de l'écran
+        self.initTitre()
+        self.initChat()
+        self.initTexte()
+        self.initUtilisateur()
 
     def initTitre(self):
         # Ajout du titre au centre de l'écran
         name = "Chat"
-        self.titreFenetre.addstr(0, int(self.maxX/2 - len(name)/2), name)
+        try :
+            self.titreFenetre.addstr(0, int(self.maxX/2 - len(name)/2), name)
+        except Exception :
+            self.stoper()
+            print("Erreur : les dimensions du terminal sont trop faibles")
         self.titreFenetre.refresh()
 
     def initChat(self):
@@ -92,7 +88,12 @@ class Chat(object):
         self.texteZone.refresh()
 
     def initUtilisateur(self):
-        self.utilisateurFenetre.addstr(1, 1, "Utilisateur(s) :")
+        # Ajout colonne utilisateurs
+        try :
+            self.utilisateurFenetre.addstr(1, 1, "Utilisateur(s) :")
+        except Exception :
+            self.stoper()
+            print("Erreur : les dimensions du terminal sont trop faibles")
         self.utilisateurFenetre.box()
         self.utilisateurFenetre.refresh()
         self.rechargementUtilisateur()
@@ -105,11 +106,9 @@ class Chat(object):
         self.chatZone.erase()
         self.chatZone.refresh()
         y, x = self.chatZone.getmaxyx()
-
         self.messageNombre = 0
-
         listeMessage = self.gestionMessages.listeDesMessages()
-        while self.messageNombre < y :
+        while self.messageNombre < y and self.messageNombre <len(listeMessage)-1:
             message = listeMessage[len(listeMessage)-2-self.messageNombre]
             self.afficherMessage(message[0],message[1])
         self.messageNombreHistorique = len(listeMessage)-self.messageNombre
@@ -117,7 +116,6 @@ class Chat(object):
     def rechargementUtilisateur(self):
         self.utilisateurZone.clear()
         self.utilisateurIndice = 0
-
         listeUtilisateurs = self.gestionUtilisateurs.listeDesUtilisateurs()
 
         for user in listeUtilisateurs :
@@ -125,19 +123,16 @@ class Chat(object):
                 self.utilisateurZone.addstr(self.utilisateurIndice+3, 1, user)
             except Exception :
                 pass
-
             self.utilisateurIndice+=1
 
         self.utilisateurZone.refresh()
 
     def rechargementTexteZone(self):
         try :
-
             self.texteZone.addstr(0, 0, self.text)
             self.texteZone.refresh()
         except Exception:
             self.text = self.text[:-1]
-
 
     ##
     #   PARTIE GESTION MESSAGES
@@ -151,21 +146,15 @@ class Chat(object):
 
                 if self.text == ":changerNom" :
                     self.stoper()
-
+                    # Démarrage d'une FenetreOption
                     option = curses.wrapper(pfo.FenetreOption)
                     option.initialisation("Changement de pseudo :")
+                    # Récupération de la réponse
                     reponse = option.lancer()
-
                     if reponse != "" :
                         self.nomUtilisateur = reponse
-
+                    # Redémarrage du chat
                     self.lancer()
-
-                elif self.text == ":effacerEcran" :
-                    self.rechargementChat()
-                    self.text = ""
-                    self.texteZone.clear()
-                    self.rechargementTexteZone()
 
                 elif self.text == ":p" :
                     self.nombreMessageRemoter +=1
@@ -189,8 +178,8 @@ class Chat(object):
                     self.text = ""
                     self.texteZone.erase()
                     self.texteZone.refresh()
-                else :
 
+                else :
                     if self.nombreMessageRemoter != 0:
                         self.nombreMessageRemoter =0
                         self.chatZone.erase()
@@ -204,19 +193,24 @@ class Chat(object):
 
                 return
 
+            # Si on est en train de supprimer
             elif chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
                 self.effacer()
                 return
 
+            # Sinon on ajoute le caractère à l'écran
             else:
                 self.text += chr(char)
                 with self.mutex:
                     self.rechargementTexteZone()
                 return
+
+        # Si on est pas actif on s'arrête
         else :
             return
 
     def effacer(self):
+        # On supprime le dernier caractère
         self.text = self.text[:-1]
         self.texteZone.clear()
         with self.mutex :
@@ -305,6 +299,7 @@ class Chat(object):
         # Attendre que les threads se terminent
         time.sleep(0.1)
         # Fermeture de la fenètre
+        curses.curs_set(1)
         curses.echo()
         curses.nocbreak()
         curses.endwin()
