@@ -97,10 +97,16 @@ class Chat(object):
 
     def rechargementChat(self):
         self.chatZone.erase()
-        self.chatIndice = 0
         self.chatZone.refresh()
-        self.messageNombreHistorique += self.messageNombre
-        self.messageNombre = 1
+        y, x = self.chatZone.getmaxyx()
+
+        self.messageNombre = 0
+
+        listeMessage = self.gestionMessages.listeDesMessages()
+        while self.messageNombre < y :
+            message = listeMessage[len(listeMessage)-2-self.messageNombre]
+            self.afficherMessage(message[0],message[1])
+        self.messageNombreHistorique = len(listeMessage)-self.messageNombre
 
     def rechargementUtilisateur(self):
         self.utilisateurZone.clear()
@@ -120,8 +126,12 @@ class Chat(object):
         self.utilisateurZone.refresh()
 
     def rechargementTexteZone(self):
-        self.texteZone.addstr(0, 0, self.text)
-        self.texteZone.refresh()
+        try :
+            self.texteZone.addstr(0, 0, self.text)
+            self.texteZone.refresh()
+        except Exception:
+            self.text = self.text[:-1]
+
 
     ##
     #   PARTIE GESTION MESSAGES
@@ -131,7 +141,7 @@ class Chat(object):
 
         if self.actif :
 
-            if chr(char) == "\n" or char == 000:
+            if chr(char) == "\n" :
 
                 if self.text == ":changerNom" :
                     self.stoper()
@@ -184,8 +194,6 @@ class Chat(object):
                         self.messageNombreHistorique = 0
 
                     else :
-                        self.messageNombre += 1
-                        self.afficherMessage(self.nomUtilisateur,self.text)
                         self.envoyerMessage()
 
                 return
@@ -211,33 +219,31 @@ class Chat(object):
         while self.actif:
             listeMessage = self.gestionMessages.listeDesMessages()
 
-            if self.messageNombre + self.messageNombreHistorique < len(listeMessage)-1 :
-                if self.messageNombre + self.messageNombreHistorique - self.nombreMessageRemoter < 0 :
-                    message = ["Attention "," il n'y a pas de message plus ancien"]
-                else :
-                    message = listeMessage[self.messageNombre + self.messageNombreHistorique - self.nombreMessageRemoter]
-                self.afficherMessage(message[0],message[1])
-                self.messageNombre+=1
+            if self.messageNombre + self.messageNombreHistorique < len(listeMessage) :
+                self.rechargementChat()
 
     def envoyerMessage(self):
-        self.gestionMessages.envoyerMessage(self.nomUtilisateur,self.text)
+        message = self.text
         self.text = ""
         self.texteZone.clear()
         self.rechargementTexteZone()
+        if message !="":
+            self.gestionMessages.envoyerMessage(self.nomUtilisateur,message)
+
 
     def afficherMessage(self,utilisateur,chat):
 
+        y, x = self.chatZone.getmaxyx()
         try:
-            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : ' + str(chat))
+            self.chatZone.addstr(y-1-self.messageNombre, 0, str(utilisateur) + ' : ' + str(chat))
 
         except Exception:
             self.rechargementChat()
-            self.chatZone.addstr(self.chatIndice, 0, str(utilisateur) + ' : '+ str(chat))
+            self.chatZone.addstr(y-1-self.messageNombre, 0, str(utilisateur) + ' : '+ str(chat))
 
         self.chatZone.refresh()
+        self.messageNombre+=1
 
-        self.chatIndice = self.chatZone.getyx()[0]
-        self.chatIndice += 1
 
     ##
     #   PARTIE GESTION UTILISATEURS
