@@ -1,7 +1,6 @@
-import curses,os,threading,curses.textpad,signal
-import Utilisateurs as appUtilisateurs
-import Messages as appMessage
-import Option as appOption
+import curses, threading,curses.textpad,signal
+from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo
+
 
 class Chat(object):
 
@@ -9,14 +8,13 @@ class Chat(object):
 
         self.stdscr = fenetre
         self.nomUtilisateur = ""
-        self.nombreMessageRemoter = 0
 
         # récupération des dimensions
         self.maxY, self.maxX = fenetre.getmaxyx()
 
-        # connexion aux données des appli de Messages et Utilisateurs
-        self.appMessages = appMessage.Messages()
-        self.appUtilisateurs = appUtilisateurs.Utilisateurs()
+        # connexion aux données des appli de gestion de Messages et Utilisateurs
+        self.gestionMessages = pgm.GestionMessages()
+        self.gestionUtilisateurs = pgu.GestionUtilisateurs()
 
     ##
     #   PARTIE INITIALISATION
@@ -27,7 +25,10 @@ class Chat(object):
         # Pas de répétition des caractères au clavier
         curses.noecho()
         curses.cbreak()
+
+        # Pas de delai à l'affichage
         self.stdscr.nodelay(0)
+
         # Récupération du caractère pour supprimer
         self.charSuppression = curses.erasechar()
 
@@ -39,48 +40,48 @@ class Chat(object):
         # finY, finX, y, x
 
         try :
+            # Création de chaque fenètre de traitement
             self.titreFenetre = curses.newwin(1, self.maxX, 0, 0)
             self.utilisateurFenetre = curses.newwin(self.maxY - 1,int(self.maxX * 0.25),1,0)
             self.chatFenetre = curses.newwin(self.maxY - int(self.maxY * 0.1) - 1,self.maxX - int(self.maxX * 0.25),1,int(self.maxX * 0.25))
             self.texteFenetre = curses.newwin(int(self.maxY * 0.1),self.maxX - int(self.maxX * 0.25),self.maxY - int(self.maxY * 0.1),int(self.maxX * 0.25))
 
+            ## Ce sont des fenètres superposées aux précédentes pour permettre un traitement plus simple
             self.utilisateurZone = curses.newwin(self.maxY - 4,int(self.maxX * 0.25)-3,3,1)
             self.chatZone = curses.newwin(self.maxY - int(self.maxY * 0.1) - 3,self.maxX - int(self.maxX * 0.25) - 2,2,int(self.maxX * 0.25) + 1)
             self.texteZone = curses.newwin(int(self.maxY * 0.1) - 2,self.maxX - int(self.maxX * 0.25) - 2,self.maxY - int(self.maxY * 0.1) + 1,int(self.maxX * 0.25) + 1)
 
+            # Initialisation de chaques parties de l'écran
             self.initTitre()
             self.initChat()
-            self.initChatZone()
             self.initTexte()
-            self.initTexteZone()
             self.initUtilisateur()
 
-            self.effacer()
-
         except Exception :
+            # Si les dimensions de l'écran sont trop faibles
             self.stoper()
             print("Erreur : les dimensions du terminal sont trop faibles")
 
     def initTitre(self):
+        # Ajout du titre au centre de l'écran
         name = "Chat"
         self.titreFenetre.addstr(0, int(self.maxX/2 - len(name)/2), name)
         self.titreFenetre.refresh()
 
     def initChat(self):
+        # Bordures de la fenètre
         self.chatFenetre.box()
         self.chatFenetre.refresh()
-
-    def initChatZone(self):
         self.chatZone.refresh()
         self.chatIndice = 0
         self.messageNombre = 0
         self.messageNombreHistorique = 0
+        self.nombreMessageRemoter = 0
 
     def initTexte(self):
+        # Bordures de la fenètre
         self.texteFenetre.box()
         self.texteFenetre.refresh()
-
-    def initTexteZone(self):
         self.text = ""
         self.texteZone.refresh()
 
@@ -105,7 +106,7 @@ class Chat(object):
         self.utilisateurZone.clear()
         self.utilisateurIndice = 0
 
-        listeUtilisateurs = self.appUtilisateurs.listeDesUtilisateurs()
+        listeUtilisateurs = self.gestionUtilisateurs.listeDesUtilisateurs()
 
         for user in listeUtilisateurs :
             try:
@@ -135,7 +136,7 @@ class Chat(object):
                 if self.text == ":changerNom" :
                     self.stoper()
 
-                    option = curses.wrapper(appOption.Option)
+                    option = curses.wrapper(pfo.FenetreOption)
                     option.initialisation("Changement de pseudo :")
                     reponse = option.lancer()
 
@@ -208,7 +209,7 @@ class Chat(object):
     def recupererMessages(self):
 
         while self.actif:
-            listeMessage = self.appMessages.listeDesMessages()
+            listeMessage = self.gestionMessages.listeDesMessages()
 
             if self.messageNombre + self.messageNombreHistorique < len(listeMessage)-1 :
                 if self.messageNombre + self.messageNombreHistorique - self.nombreMessageRemoter < 0 :
@@ -219,7 +220,7 @@ class Chat(object):
                 self.messageNombre+=1
 
     def envoyerMessage(self):
-        self.appMessages.envoyerMessage(self.nomUtilisateur,self.text)
+        self.gestionMessages.envoyerMessage(self.nomUtilisateur,self.text)
         self.text = ""
         self.texteZone.clear()
         self.rechargementTexteZone()
@@ -245,16 +246,16 @@ class Chat(object):
     def recupererUtilisateurs(self):
 
         while self.actif:
-            listeUtilisateurs=self.appUtilisateurs.listeDesUtilisateurs()
+            listeUtilisateurs=self.gestionUtilisateurs.listeDesUtilisateurs()
 
             if self.utilisateurIndice != len(listeUtilisateurs) :
                 self.rechargementUtilisateur()
 
     def ajouterUtilisateur(self):
-        self.appUtilisateurs.ajouterUtilisateur(self.nomUtilisateur)
+        self.gestionUtilisateurs.ajouterUtilisateur(self.nomUtilisateur)
 
     def supprimerUtilisateur(self):
-        self.appUtilisateurs.supprimerUtilisateur(self.nomUtilisateur)
+        self.gestionUtilisateurs.supprimerUtilisateur(self.nomUtilisateur)
 
     ##
     #   PARTIE ACTIVITE PROGRAMME
@@ -280,9 +281,9 @@ class Chat(object):
         self.actif=False
         self.supprimerUtilisateur()
 
+        # Fermeture de la fenètre
         curses.echo()
         curses.nocbreak()
-
         curses.endwin()
 
 # Cette méthode est utilisé pour les test de Chat.py

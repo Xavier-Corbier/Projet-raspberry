@@ -1,7 +1,11 @@
-class Messages(object):
+import os
+
+class GestionMessages(object):
 
     def listeDesMessages(self):
-        fichier = open("messages.txt", "r")
+        lienDossier = os.path.dirname(os.path.realpath('__file__'))
+
+        fichier = open(os.path.join(lienDossier, "données/messages.txt"), "r")
         chat =fichier.read().split("\n")
         fichier.close()
 
@@ -12,6 +16,8 @@ class Messages(object):
         return resultat
 
     def envoyerMessage(self,utilisateur,message):
-        fichier = open("messages.txt", "a+")
+        lienDossier = os.path.dirname(os.path.realpath('__file__'))
+
+        fichier = open(os.path.join(lienDossier, "données/messages.txt"), "a+")
         fichier.write(utilisateur+":"+message+"\n")
         fichier.close()

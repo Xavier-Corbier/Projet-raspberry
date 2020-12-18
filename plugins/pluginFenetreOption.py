@@ -1,6 +1,6 @@
 import curses,os,threading,curses.textpad,signal
 
-class Option(object):
+class FenetreOption(object):
 
     def __init__(self, fenetre):
 

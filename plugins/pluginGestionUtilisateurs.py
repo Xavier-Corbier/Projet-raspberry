@@ -1,10 +1,14 @@
-class Utilisateurs(object):
+import os
+
+class GestionUtilisateurs(object):
 
     def supprimerUtilisateur(self,nomUtilisateur):
 
+        lienDossier = os.path.dirname(os.path.realpath('__file__'))
+
         listeUtilisateurs = self.listeDesUtilisateurs()
 
-        fichier = open("users.txt", "w")
+        fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "w")
         nombreSupprime = 0
         for user in listeUtilisateurs:
             if nombreSupprime == 0:
@@ -18,12 +22,16 @@ class Utilisateurs(object):
         fichier.close()
 
     def ajouterUtilisateur(self,nomUtilisateur):
-        fichier = open("users.txt", "a+")
+
+        lienDossier = os.path.dirname(os.path.realpath('__file__'))
+        fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "a+")
         fichier.write(nomUtilisateur+"\n")
         fichier.close()
 
     def listeDesUtilisateurs(self):
-        fichier = open("users.txt", "r")
+        lienDossier = os.path.dirname(os.path.realpath('__file__'))
+
+        fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "r")
         utilisateurs =fichier.read()
         fichier.close()
 
