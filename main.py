@@ -4,7 +4,4 @@ import chat as appChat
 # Création de la fenètre de Chat
 chat = appChat.Chat(curses.initscr())
 
-chat.nomUtilisateur = os.environ["USER"]
-
-chat.ajouterUtilisateur()
 chat.lancer()

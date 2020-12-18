@@ -1,4 +1,4 @@
-import curses, threading,curses.textpad,signal
+import curses, threading,curses.textpad,signal,time,os
 from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo
 
 
@@ -16,6 +16,8 @@ class Chat(object):
         self.gestionMessages = pgm.GestionMessages()
         self.gestionUtilisateurs = pgu.GestionUtilisateurs()
 
+        self.mutex=threading.Lock()
+
     ##
     #   PARTIE INITIALISATION
     ##
@@ -28,10 +30,11 @@ class Chat(object):
 
         # Pas de delai à l'affichage
         self.stdscr.nodelay(0)
-
         # Récupération du caractère pour supprimer
         self.charSuppression = curses.erasechar()
+        curses.curs_set(0)
 
+        curses.doupdate()
         # Mise en place de l'affichage
         self.initialisationAffichage()
 
@@ -49,7 +52,7 @@ class Chat(object):
             ## Ce sont des fenètres superposées aux précédentes pour permettre un traitement plus simple
             self.utilisateurZone = curses.newwin(self.maxY - 4,int(self.maxX * 0.25)-3,3,1)
             self.chatZone = curses.newwin(self.maxY - int(self.maxY * 0.1) - 3,self.maxX - int(self.maxX * 0.25) - 2,2,int(self.maxX * 0.25) + 1)
-            self.texteZone = curses.newwin(int(self.maxY * 0.1) - 2,self.maxX - int(self.maxX * 0.25) - 2,self.maxY - int(self.maxY * 0.1) + 1,int(self.maxX * 0.25) + 1)
+            self.texteZone = curses.newwin(1,self.maxX - int(self.maxX * 0.25) - 2,self.maxY - int(self.maxY * 0.1) + 1,int(self.maxX * 0.25) + 1)
 
             # Initialisation de chaques parties de l'écran
             self.initTitre()
@@ -57,6 +60,9 @@ class Chat(object):
             self.initTexte()
             self.initUtilisateur()
 
+
+            self.text="initialisation"
+            self.envoyerMessage()
         except Exception :
             # Si les dimensions de l'écran sont trop faibles
             self.stoper()
@@ -90,7 +96,7 @@ class Chat(object):
         self.utilisateurFenetre.box()
         self.utilisateurFenetre.refresh()
         self.rechargementUtilisateur()
-        
+
     ##
     #   PARTIE RECHARGEMENT
     ##
@@ -117,7 +123,6 @@ class Chat(object):
         for user in listeUtilisateurs :
             try:
                 self.utilisateurZone.addstr(self.utilisateurIndice+3, 1, user)
-
             except Exception :
                 pass
 
@@ -127,6 +132,7 @@ class Chat(object):
 
     def rechargementTexteZone(self):
         try :
+
             self.texteZone.addstr(0, 0, self.text)
             self.texteZone.refresh()
         except Exception:
@@ -204,7 +210,8 @@ class Chat(object):
 
             else:
                 self.text += chr(char)
-                self.rechargementTexteZone()
+                with self.mutex:
+                    self.rechargementTexteZone()
                 return
         else :
             return
@@ -212,21 +219,25 @@ class Chat(object):
     def effacer(self):
         self.text = self.text[:-1]
         self.texteZone.clear()
-        self.rechargementTexteZone()
+        with self.mutex :
+            self.rechargementTexteZone()
 
     def recupererMessages(self):
 
         while self.actif:
+            time.sleep(0.1)
             listeMessage = self.gestionMessages.listeDesMessages()
 
             if self.messageNombre + self.messageNombreHistorique < len(listeMessage) :
-                self.rechargementChat()
+                with self.mutex :
+                    self.rechargementChat()
 
     def envoyerMessage(self):
         message = self.text
         self.text = ""
         self.texteZone.clear()
-        self.rechargementTexteZone()
+        with self.mutex :
+            self.rechargementTexteZone()
         if message !="":
             self.gestionMessages.envoyerMessage(self.nomUtilisateur,message)
 
@@ -238,7 +249,8 @@ class Chat(object):
             self.chatZone.addstr(y-1-self.messageNombre, 0, str(utilisateur) + ' : ' + str(chat))
 
         except Exception:
-            self.rechargementChat()
+            with self.mutex :
+                self.rechargementChat()
             self.chatZone.addstr(y-1-self.messageNombre, 0, str(utilisateur) + ' : '+ str(chat))
 
         self.chatZone.refresh()
@@ -252,10 +264,12 @@ class Chat(object):
     def recupererUtilisateurs(self):
 
         while self.actif:
+            time.sleep(0.1)
             listeUtilisateurs=self.gestionUtilisateurs.listeDesUtilisateurs()
 
             if self.utilisateurIndice != len(listeUtilisateurs) :
-                self.rechargementUtilisateur()
+                with self.mutex :
+                    self.rechargementUtilisateur()
 
     def ajouterUtilisateur(self):
         self.gestionUtilisateurs.ajouterUtilisateur(self.nomUtilisateur)
@@ -272,7 +286,9 @@ class Chat(object):
         self.actif = True
 
         self.initialisation()
+        self.nomUtilisateur = os.environ["USER"]
 
+        self.ajouterUtilisateur()
         threading.Thread(target=self.recupererMessages).start()
         threading.Thread(target=self.recupererUtilisateurs).start()
 
@@ -286,7 +302,8 @@ class Chat(object):
 
         self.actif=False
         self.supprimerUtilisateur()
-
+        # Attendre que les threads se terminent
+        time.sleep(0.1)
         # Fermeture de la fenètre
         curses.echo()
         curses.nocbreak()
