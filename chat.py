@@ -117,10 +117,14 @@ class Chat(object):
         self.utilisateurZone.clear()
         self.utilisateurIndice = 0
         listeUtilisateurs = self.gestionUtilisateurs.listeDesUtilisateurs()
-
+        y, x = self.utilisateurZone.getmaxyx()
         for user in listeUtilisateurs :
             try:
-                self.utilisateurZone.addstr(self.utilisateurIndice+3, 1, user)
+                longeur = len(user)
+                if longeur>x :
+                    self.utilisateurZone.addstr(self.utilisateurIndice+3, 0, user[:x-1])
+                else:
+                    self.utilisateurZone.addstr(self.utilisateurIndice+3, 0, user)
             except Exception :
                 pass
             self.utilisateurIndice+=1
@@ -222,7 +226,7 @@ class Chat(object):
             time.sleep(0.1)
             listeMessage = self.gestionMessages.listeDesMessages()
 
-            if self.messageNombre + self.messageNombreHistorique < len(listeMessage) :
+            if self.messageNombre + self.messageNombreHistorique != len(listeMessage) :
                 with self.mutex :
                     self.rechargementChat()
 
@@ -239,13 +243,17 @@ class Chat(object):
     def afficherMessage(self,utilisateur,chat):
 
         y, x = self.chatZone.getmaxyx()
-        try:
-            self.chatZone.addstr(y-1-self.messageNombre, 0, str(utilisateur) + ' : ' + str(chat))
+        ligne = str(utilisateur) + ' : ' + str(chat)
 
+        try:
+            longeur = len(ligne)
+            if longeur>x :
+                self.chatZone.addstr(y-1-self.messageNombre, 0, ligne[:x-1])
+            else :
+                self.chatZone.addstr(y-1-self.messageNombre, 0, ligne)
         except Exception:
             with self.mutex :
                 self.rechargementChat()
-            self.chatZone.addstr(y-1-self.messageNombre, 0, str(utilisateur) + ' : '+ str(chat))
 
         self.chatZone.refresh()
         self.messageNombre+=1
@@ -280,7 +288,6 @@ class Chat(object):
         self.actif = True
 
         self.initialisation()
-        self.nomUtilisateur = os.environ["USER"]
 
         self.ajouterUtilisateur()
         threading.Thread(target=self.recupererMessages).start()

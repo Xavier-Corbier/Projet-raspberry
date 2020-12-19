@@ -1,12 +1,12 @@
 import os
-from ilock import ILock
+#from ilock import ILock
 
 class GestionMessages(object):
 
     def listeDesMessages(self):
-        resultat = []
+            resultat = []
 
-        with ILock('messagesLecture'):
+        #with ILock('messagesLecture'):
             lienDossier = os.path.dirname(os.path.realpath('__file__'))
 
             fichier = open(os.path.join(lienDossier, "données/messages.txt"), "r")
@@ -17,10 +17,10 @@ class GestionMessages(object):
             for message in chat :
                 resultat.append(message.split(":"))
 
-        return resultat
+            return resultat
 
     def envoyerMessage(self,utilisateur,message):
-        with ILock('messagesEcriture'):
+        #with ILock('messagesEcriture'):
             lienDossier = os.path.dirname(os.path.realpath('__file__'))
 
             fichier = open(os.path.join(lienDossier, "données/messages.txt"), "a+")

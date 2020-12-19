@@ -1,16 +1,16 @@
 import os
-from ilock import ILock
+#from ilock import ILock
 
 class GestionUtilisateurs(object):
 
     def supprimerUtilisateur(self,nomUtilisateur):
 
 
-        lienDossier = os.path.dirname(os.path.realpath('__file__'))
+            lienDossier = os.path.dirname(os.path.realpath('__file__'))
 
-        listeUtilisateurs = self.listeDesUtilisateurs()
+            listeUtilisateurs = self.listeDesUtilisateurs()
 
-        with ILock('utilisateursSuppression'):
+        #with ILock('utilisateursSuppression'):
             fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "w")
             nombreSupprime = 0
             for user in listeUtilisateurs:
@@ -26,16 +26,16 @@ class GestionUtilisateurs(object):
 
     def ajouterUtilisateur(self,nomUtilisateur):
 
-        lienDossier = os.path.dirname(os.path.realpath('__file__'))
-        with ILock('utilisateursAjout'):
+            lienDossier = os.path.dirname(os.path.realpath('__file__'))
+        #with ILock('utilisateursAjout'):
             fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "a+")
             fichier.write(nomUtilisateur+"\n")
             fichier.close()
 
     def listeDesUtilisateurs(self):
-        lienDossier = os.path.dirname(os.path.realpath('__file__'))
+            lienDossier = os.path.dirname(os.path.realpath('__file__'))
 
-        with ILock('utilisateursLecture'):
+        #with ILock('utilisateursLecture'):
             fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "r")
             utilisateurs =fichier.read()
             fichier.close()
