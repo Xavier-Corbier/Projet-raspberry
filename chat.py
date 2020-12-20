@@ -13,6 +13,8 @@ class Chat(object):
         self.gestionUtilisateurs = pgu.GestionUtilisateurs()
         # Création du mutex
         self.mutex=threading.Lock()
+        # Nettoyer l'écran
+        self.stdscr.clear()
 
     ##
     #   PARTIE INITIALISATION
@@ -185,7 +187,6 @@ class Chat(object):
                         self.rechargementTexteZone()
                 # Sinon on envoie le message
                 else :
-
                     if self.nombreMessageRemoter != 0:
                         self.nombreMessageRemoter =0
                     self.envoyerMessage()
