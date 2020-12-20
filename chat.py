@@ -38,14 +38,14 @@ class Chat(object):
         # finY, finX, y, x
         try :
             # Création de chaque fenètre de traitement
-            self.titreFenetre = curses.newwin(1, self.maxX, 0, 0)
-            self.utilisateurFenetre = curses.newwin(self.maxY - 1,int(self.maxX * 0.25),1,0)
-            self.chatFenetre = curses.newwin(self.maxY - int(self.maxY * 0.1) - 1,self.maxX - int(self.maxX * 0.25),1,int(self.maxX * 0.25))
+            self.titreFenetre = curses.newwin(4, self.maxX, 0, 0)
+            self.utilisateurFenetre = curses.newwin(self.maxY - 5,int(self.maxX * 0.25)-2,5,2)
+            self.chatFenetre = curses.newwin(self.maxY - int(self.maxY * 0.1) - 5,self.maxX - int(self.maxX * 0.25),5,int(self.maxX * 0.25))
             self.texteFenetre = curses.newwin(int(self.maxY * 0.1),self.maxX - int(self.maxX * 0.25),self.maxY - int(self.maxY * 0.1),int(self.maxX * 0.25))
 
             ## Ce sont des fenètres superposées aux précédentes pour permettre un traitement plus simple
-            self.utilisateurZone = curses.newwin(self.maxY - 4,int(self.maxX * 0.25)-3,3,1)
-            self.chatZone = curses.newwin(self.maxY - int(self.maxY * 0.1) - 3,self.maxX - int(self.maxX * 0.25) - 2,2,int(self.maxX * 0.25) + 1)
+            self.utilisateurZone = curses.newwin(self.maxY - 8,int(self.maxX * 0.25)-6,7,5)
+            self.chatZone = curses.newwin(self.maxY - int(self.maxY * 0.1) - 7,self.maxX - int(self.maxX * 0.25) - 3,6,int(self.maxX * 0.25) + 2)
             self.texteZone = curses.newwin(1,self.maxX - int(self.maxX * 0.25) - 2,self.maxY - int(self.maxY * 0.1) + 1,int(self.maxX * 0.25) + 1)
         except Exception :
             self.stoper()
@@ -60,7 +60,8 @@ class Chat(object):
         # Ajout du titre au centre de l'écran
         name = "Chat"
         try :
-            self.titreFenetre.addstr(0, int(self.maxX/2 - len(name)/2), name)
+            self.titreFenetre.addstr(2, int(self.maxX/2 - len(name)/2), name)
+            self.titreFenetre.addstr(3, 3, "Options - envoyer :option ")
         except Exception :
             self.stoper()
             print("Erreur : les dimensions du terminal sont trop faibles")
@@ -86,7 +87,7 @@ class Chat(object):
     def initUtilisateur(self):
         # Ajout colonne utilisateurs
         try :
-            self.utilisateurFenetre.addstr(1, 1, "Utilisateur(s) :")
+            self.utilisateurFenetre.addstr(1, 2, "Utilisateur(s) :")
         except Exception :
             self.stoper()
             print("Erreur : les dimensions du terminal sont trop faibles")
@@ -210,7 +211,9 @@ class Chat(object):
                 return
             # Sinon on ajoute le caractère à l'écran
             else:
-                self.text += chr(char)
+                y, x = self.chatZone.getmaxyx()
+                if len(self.text)+1 < x:
+                    self.text += chr(char)
                 with self.mutex:
                     self.rechargementTexteZone()
                 return
