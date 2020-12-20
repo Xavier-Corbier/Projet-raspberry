@@ -5,7 +5,7 @@ import grovepi
 # Connecte la LED au port digital D2
 LED_PORT = 2
 
-# Initialise le relais
+# Initialise la LED
 # Précondition :
 # - avoir une LED branché à la raspberry
 # Résultat :

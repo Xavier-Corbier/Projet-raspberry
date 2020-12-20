@@ -11,13 +11,9 @@ bus = smbus.SMBus(1)  # pour I2C-1 (0 pour I2C-0)
 DISPLAY_RGB_ADDR = 0x62
 DISPLAY_TEXT_ADDR = 0x3e
 
-
-
-#                                                           #   
-#------------------  GESTION DE L'ECRAN  -------------------#
-#                                                           #
-
-
+##
+#   GESTION DE L'ECRAN
+##
 
 # Initialise l'écran
 # Précondition :
@@ -38,13 +34,9 @@ def texteCmd(cmd):
         time.sleep(0.1)
         bus.write_byte_data(DISPLAY_TEXT_ADDR,0x80,cmd)
 
-
-
-#                                                           #   
-#-----------------  GESTION DE LA COULEUR  -----------------#
-#                                                           #
-
-
+##
+#   GESTION DE LA COULEUR
+##
 
 # Code de la fonction permettant de choisir la couleur
 # du fond d'ecran, ne pas oublier d'initialiser l'ecran
@@ -80,13 +72,9 @@ def setCouleur(couleur):
 	elif(color=="blanc"):
                 setRGB(255,255,255)
 
-
-
-#                                                           #   
-#----------------  GESTION DE L'AFFICHAGE  -----------------#
-#                                                           #
-
-
+##
+#   GESTION DE L'AFFICHAGE
+##
 
 # Fonction permettant d'ecrire le texte recu en parametre (scrolling)
 # Si le texte contient un \n ou plus de 16 caracteres un passage à la ligne se fait

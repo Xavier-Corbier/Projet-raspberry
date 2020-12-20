@@ -5,7 +5,7 @@ import grovepi
 # Connecte le Buzzer au port digital D5
 BUZZER_PORT = 5
 
-# Initialise le relais
+# Initialise le Buzzer
 # Précondition :
 # - avoir un Buzzer branché à la raspberry
 # Résultat :
