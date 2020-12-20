@@ -30,7 +30,7 @@ class FenetreOption(object):
         # Création des fenètres de l'écran
         try :
             if boolReponse :
-                self.titreFenetre = curses.newwin(int(self.maxY/2), self.maxX, 0, 0)
+                self.titreFenetre = curses.newwin(self.maxY-int(self.maxY * 0.1)-2, self.maxX, 0, 0)
                 self.texteFenetre = curses.newwin(int(self.maxY * 0.1),self.maxX ,self.maxY - int(self.maxY * 0.1),0)
                 self.texteZone = curses.newwin(int(self.maxY * 0.1)  -3  ,self.maxX  -3 ,self.maxY - int(self.maxY * 0.1) + 2, + 2)
             else :
@@ -46,8 +46,15 @@ class FenetreOption(object):
 
     def initTitre(self):
         # Ajout du titre au centre de l'écran
+        y, x = self.titreFenetre.getmaxyx()
+        longeur = int(len(self.question)/2) - len(self.question)
+        i = 0
+        # Mise en en place de chaque ligne des questions au centre de l'écran
         try :
-            self.titreFenetre.addstr(int(self.maxY/2)-2, int(self.maxX/2 - len(self.question)/2), self.question)
+            while longeur< len(self.question) and i < len(self.question) :
+                self.titreFenetre.addstr(int(self.maxY/2)-2-longeur, int(self.maxX/2 - len(self.question[len(self.question)-i-1])/2), self.question[len(self.question)-i-1])
+                longeur +=1
+                i+=1
         except Exception :
             print("Erreur : Les dimensions de l'écran sont trop petites !")
             self.stoper()

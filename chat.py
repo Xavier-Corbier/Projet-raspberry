@@ -158,11 +158,21 @@ class Chat(object):
                     self.stoper()
                     # Démarrage d'une FenetreOption
                     option = curses.wrapper(pfo.FenetreOption)
-                    option.initialisation("Changement de pseudo :")
+                    option.initialisation(["Changement de pseudo :","(Appuyez sur Entrée pour quitter)"])
                     # Récupération de la réponse
                     reponse = option.lancer()
                     if reponse != "" :
                         self.nomUtilisateur = reponse
+                    # Redémarrage du chat
+                    self.lancer()
+                # Si on veut accéder aux option
+                elif self.text == ":option" :
+                    self.stoper()
+                    # Démarrage d'une FenetreOption
+                    option = curses.wrapper(pfo.FenetreOption)
+                    option.initialisation(["Option du chat :","(Appuyez sur Entrée pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement", ":p - Messages précédent", ":s Messages suivant", ":quitter - Quitter le chat"],False)
+                    # Récupération de la réponse
+                    _ = option.lancer()
                     # Redémarrage du chat
                     self.lancer()
                 # Si on veut accéder aux messages précédent
@@ -185,6 +195,9 @@ class Chat(object):
                         self.text=""
                     with self.mutex:
                         self.rechargementTexteZone()
+                # Si on veut quitter le chat
+                elif self.text == ":quitter" :
+                    self.stoper()
                 # Sinon on envoie le message
                 else :
                     if self.nombreMessageRemoter != 0:
