@@ -1,7 +1,14 @@
 import curses,os,threading,curses.textpad,signal
 
+# Class qui permet de gérer et afficher des options au chat
+
 class FenetreOption(object):
 
+    # Crée l'option
+    # Précondition :
+    # - fenetre : fenetre curses - curses.initscr()
+    # Résultat :
+    # - La fenètre option est crée
     def __init__(self, fenetre):
         self.stdscr = fenetre
         self.actif = True
@@ -23,6 +30,16 @@ class FenetreOption(object):
         # Nettoyer l'écran
         self.stdscr.clear()
 
+    ##
+    #   PARTIE INITIALISATION
+    ##
+
+    # Initialise l'option
+    # Précondition :
+    # - question : table de chaines de caractères de questions que l'on veut posé
+    # - boolReponse : booléen pour savoir si l'on veut une réponse à notre question
+    # Résultat :
+    # - L'affichage de l'option est initialisé
     def initialisation(self,question,boolReponse=True):
         # Récupération des données
         self.question = question
@@ -44,6 +61,9 @@ class FenetreOption(object):
         if boolReponse :
             self.initTexte()
 
+    # Initialise le titre de l'option
+    # Résultat :
+    # - La partie titre de l'option est initialisé si les dimensions le permettent
     def initTitre(self):
         # Ajout du titre au centre de l'écran
         y, x = self.titreFenetre.getmaxyx()
@@ -60,6 +80,9 @@ class FenetreOption(object):
             self.stoper()
         self.titreFenetre.refresh()
 
+    # Initialise la partie texte de l'option
+    # Résultat :
+    # - La partie texte de l'option est initialisé
     def initTexte(self):
         try :
             self.texteFenetre.addstr(1,1, "Réponse :")
@@ -72,6 +95,13 @@ class FenetreOption(object):
         self.text = ""
         self.texteZone.refresh()
 
+    ##
+    #   PARTIE RECHARGEMENT
+    ##
+
+    # Recharge la partie texte de l'option
+    # Résultat :
+    # - La partie texte de l'option est rechargé avec les dernieres lettres tappé
     def rechargementTexteZone(self):
         # Si la zone de texte est assez grande
         try :
@@ -81,6 +111,13 @@ class FenetreOption(object):
         except Exception:
             self.text = self.text[:-1]
 
+    ##
+    #   PARTIE GESTION MESSAGES CLAVIER
+    ##
+
+    # Traite le message écrit à partir des commandes reçu du clavier
+    # Résultat :
+    # - Les commandes sont traités
     def message(self, char):
         # Si le chat est actif
         if self.actif :
@@ -105,12 +142,22 @@ class FenetreOption(object):
         else :
             return
 
+    # Efface le dernier caractère écrit sur la partie texte de l'option
+    # Résultat :
+    # - Le dernier caractère est effacé
     def effacer(self):
         # On supprime le dernier caractère
         self.text = self.text[:-1]
         self.texteZone.clear()
         self.rechargementTexteZone()
 
+    ##
+    #   PARTIE ACTIVITE PROGRAMME
+    ##
+
+    # Lance l'option
+    # Résultat :
+    # - L'option est lancé et le signal Ctrl + C est activé pour stopper l'option
     def lancer(self):
         # Ajout du signal pour stopper avec un ctrl + C
         signal.signal(signal.SIGINT, self.stoper)
@@ -125,6 +172,11 @@ class FenetreOption(object):
         # Retourne la réponse à la question
         return self.text
 
+    # Stoppe l'option
+    # Précondition :
+    # - signum,frame : Paramètre facultatif qui sont utile pour lier à un signal
+    # Résultat :
+    # - L'option est stoppé
     def stoper(self,signum=None, frame=None):
         # Fermeture de l'option
         self.actif=False
