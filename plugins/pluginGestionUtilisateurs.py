@@ -1,8 +1,15 @@
 import os
 #from ilock import ILock
 
+# Class qui permet la gestion des utilisateurs
+
 class GestionUtilisateurs(object):
 
+    # Supprime l'utilisateur
+    # Précondition :
+    # - nomUtilisateur : nom utilisateur a supprimer
+    # Résultat :
+    # - Le nom de l'utilisateur a été supprimé
     def supprimerUtilisateur(self,nomUtilisateur):
         # TO DO : Pas sur du fonctionnement à verifier !
         #with ILock('utilisateursSuppression'):
@@ -23,6 +30,11 @@ class GestionUtilisateurs(object):
                         fichier.write(user+"\n")
             fichier.close()
 
+    # Ajout l'utilisateur
+    # Précondition :
+    # - nomUtilisateur : nom utilisateur a ajouté
+    # Résultat :
+    # - Le nom de l'utilisateur a été écrit
     def ajouterUtilisateur(self,nomUtilisateur):
         # TO DO : Pas sur du fonctionnement à verifier !
         #with ILock('utilisateursAjout'):
@@ -32,6 +44,9 @@ class GestionUtilisateurs(object):
             fichier.write(nomUtilisateur+"\n")
             fichier.close()
 
+    # Récupère la liste des utilisateurs
+    # Résultat :
+    # - La liste des utilisateurs est retourné
     def listeDesUtilisateurs(self):
         # TO DO : Pas sur du fonctionnement à verifier !
         #with ILock('utilisateursLecture'):
