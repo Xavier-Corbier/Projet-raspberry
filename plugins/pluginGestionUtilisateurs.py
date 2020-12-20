@@ -4,13 +4,12 @@ import os
 class GestionUtilisateurs(object):
 
     def supprimerUtilisateur(self,nomUtilisateur):
-
-
-            lienDossier = os.path.dirname(os.path.realpath('__file__'))
-
-            listeUtilisateurs = self.listeDesUtilisateurs()
-
+        # TO DO : Pas sur du fonctionnement à verifier !
         #with ILock('utilisateursSuppression'):
+            # Récupération des utilisateurs actuels
+            listeUtilisateurs = self.listeDesUtilisateurs()
+            # Réécriture de tous les noms d'utilisateurs sauf celui que l'on veut supprimer
+            lienDossier = os.path.dirname(os.path.realpath('__file__'))
             fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "w")
             nombreSupprime = 0
             for user in listeUtilisateurs:
@@ -25,19 +24,21 @@ class GestionUtilisateurs(object):
             fichier.close()
 
     def ajouterUtilisateur(self,nomUtilisateur):
-
-            lienDossier = os.path.dirname(os.path.realpath('__file__'))
+        # TO DO : Pas sur du fonctionnement à verifier !
         #with ILock('utilisateursAjout'):
+            # Ecriture du nom d'utilisateur dans le fichier
+            lienDossier = os.path.dirname(os.path.realpath('__file__'))
             fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "a+")
             fichier.write(nomUtilisateur+"\n")
             fichier.close()
 
     def listeDesUtilisateurs(self):
-            lienDossier = os.path.dirname(os.path.realpath('__file__'))
-
+        # TO DO : Pas sur du fonctionnement à verifier !
         #with ILock('utilisateursLecture'):
+            # Lecture du fichier
+            lienDossier = os.path.dirname(os.path.realpath('__file__'))
             fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "r")
             utilisateurs =fichier.read()
             fichier.close()
-
+            # Décomposition du fichier en ligne
             return utilisateurs.split("\n")
