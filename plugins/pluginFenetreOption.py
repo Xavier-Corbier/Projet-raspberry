@@ -23,20 +23,26 @@ class FenetreOption(object):
         # Nettoyer l'écran
         self.stdscr.clear()
 
-    def initialisation(self,question):
+    def initialisation(self,question,boolReponse=True):
         # Récupération des données
         self.question = question
+        self.boolReponse = boolReponse
         # Création des fenètres de l'écran
         try :
-            self.titreFenetre = curses.newwin(int(self.maxY/2), self.maxX, 0, 0)
-            self.texteFenetre = curses.newwin(int(self.maxY * 0.1),self.maxX ,self.maxY - int(self.maxY * 0.1),0)
-            self.texteZone = curses.newwin(int(self.maxY * 0.1)  -3  ,self.maxX  -3 ,self.maxY - int(self.maxY * 0.1) + 2, + 2)
+            if boolReponse :
+                self.titreFenetre = curses.newwin(int(self.maxY/2), self.maxX, 0, 0)
+                self.texteFenetre = curses.newwin(int(self.maxY * 0.1),self.maxX ,self.maxY - int(self.maxY * 0.1),0)
+                self.texteZone = curses.newwin(int(self.maxY * 0.1)  -3  ,self.maxX  -3 ,self.maxY - int(self.maxY * 0.1) + 2, + 2)
+            else :
+                self.titreFenetre = curses.newwin(self.maxY, self.maxX, 0, 0)
+
         except Exception:
             print("Erreur : Les dimensions de l'écran sont trop petites !")
             self.stoper()
         # Initialisation des différentes fenètres
         self.initTitre()
-        self.initTexte()
+        if boolReponse :
+            self.initTexte()
 
     def initTitre(self):
         # Ajout du titre au centre de l'écran
@@ -75,14 +81,18 @@ class FenetreOption(object):
             if chr(char) == "\n":
                 self.stoper()
                 return
-            # Si on est en train de supprimer
-            elif chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
-                self.effacer()
-                return
-            # Sinon on ajoute le caractère à l'écran
-            else:
-                self.text += chr(char)
-                self.rechargementTexteZone()
+            # Si on a une réponse
+            elif self.boolReponse:
+                # Si on est en train de supprimer
+                if chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
+                    self.effacer()
+                    return
+                # Sinon on ajoute le caractère à l'écran
+                else:
+                    self.text += chr(char)
+                    self.rechargementTexteZone()
+                    return
+            else :
                 return
         # Si on est pas actif on s'arrête
         else :
@@ -100,7 +110,10 @@ class FenetreOption(object):
         # Tant que l'option est actif
         while self.actif:
             # On récupère les caractères saisie au clavier et on les traitent
-            caractere = self.texteZone.getch()
+            if self.boolReponse:
+                caractere = self.texteZone.getch()
+            else :
+                caractere = self.titreFenetre.getch()
             self.message(caractere)
         # Retourne la réponse à la question
         return self.text
