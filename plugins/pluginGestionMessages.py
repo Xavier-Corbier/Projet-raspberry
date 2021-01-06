@@ -13,8 +13,8 @@ class GestionMessages(object):
         # TO DO : Pas sur du fonctionnement à verifier !
         #with ILock('messagesLecture'):
             # Lecture du fichier
-            lienDossier = os.path.dirname(os.path.realpath('__file__'))
-            fichier = open(os.path.join(lienDossier, "données/messages.txt"), "r")
+            lienDossier = os.path.dirname(os.getcwd())
+            fichier = open(os.path.join(lienDossier, "Projet-raspberry/données/messages.txt"), "r")
             # Décomposition en ligne de messages
             chat =fichier.read().split("\n")
             fichier.close()
@@ -33,7 +33,7 @@ class GestionMessages(object):
         # TO DO : Pas sur du fonctionnement à verifier !
         #with ILock('messagesEcriture'):
             # Ecriture dans le fichier
-            lienDossier = os.path.dirname(os.path.realpath('__file__'))
-            fichier = open(os.path.join(lienDossier, "données/messages.txt"), "a+")
+            lienDossier = os.path.dirname(os.getcwd())
+            fichier = open(os.path.join(lienDossier, "Projet-raspberry/données/messages.txt"), "a+")
             fichier.write(utilisateur+":"+message+"\n")
             fichier.close()
