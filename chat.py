@@ -389,6 +389,8 @@ class Chat(object):
         self.supprimerUtilisateur()
         # Attendre que les threads se terminent
         time.sleep(0.1)
+        # Nettoyer l'écran
+        self.stdscr.clear()
         # Fermeture de la fenètre
         curses.curs_set(1)
         curses.echo()
