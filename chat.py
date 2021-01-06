@@ -137,7 +137,7 @@ class Chat(object):
         self.messageNombre = 0
         listeMessage = self.gestionMessages.listeDesMessages()
         # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
-        while self.messageNombre  < y - self.nombreMessageRemoter and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
+        while self.messageNombre  < y  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
             message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
             self.afficherMessage(message[0],message[1])
         self.messageNombreHistorique = len(listeMessage)-self.messageNombre
