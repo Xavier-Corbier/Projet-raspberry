@@ -1,0 +1,4 @@
+VAR=$(pwd)
+cd /home/chat/Projet-raspberry
+python3 main.py
+cd $VAR

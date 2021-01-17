@@ -18,6 +18,9 @@ echo "Installation en cours ..."
   git clone https://github.com/Xavier-Corbier/Projet-raspberry.git
   ## Création d'un utilisateur chat sur la raspberry sans mot de passe et sans interractiveté avec le terminal
   sudo adduser --disabled-password --gecos "" chat > /dev/null 2>&1
+  mv Projet-raspberry/ /home/chat/Projet-raspberry
+  cp /home/chat/Projet-raspberry/chat /usr/bin/chat
+  sudo chmod 777 /usr/bin/chat
 
 
 elif echo $commande | grep -q '^sudo:'; then
