@@ -15,13 +15,16 @@ echo "Installation en cours ..."
     ## cacher le résultat du git clone
     echo "Téléchargement du programme chat ..."
   fi
-  git clone https://github.com/Xavier-Corbier/Projet-raspberry.git
-  ## Création d'un utilisateur chat sur la raspberry sans mot de passe et sans interractiveté avec le terminal
+  git clone https://github.com/Xavier-Corbier/Projet-raspberry.git > /dev/null 2>&1
+  ## création d'un utilisateur chat sur la raspberry sans mot de passe et sans interractiveté avec le terminal
   sudo adduser --disabled-password --gecos "" chat > /dev/null 2>&1
+  ## copie du code source vers le répertoire de l'utilisateur chat
   sudo mv Projet-raspberry/ /home/chat/Projet-raspberry
+  ## création de la commande chat
   sudo cp /home/chat/Projet-raspberry/chat /usr/bin/chat
+  ## autorisation d'éxécuter la commande chat
   sudo chmod 777 /usr/bin/chat
-
+  echo "Installation terminé !"
 
 elif echo $commande | grep -q '^sudo:'; then
 ## il est nécéssaire de demander le mot de passe pour avoir l'accès sudoers
