@@ -1,9 +1,3 @@
-telechargementEtInstallationProgramme(){
-  # clone du projet
-  git clone https://github.com/Xavier-Corbier/Projet-raspberry.git > /dev/null 2>&1
-
-}
-
 commande=$(sudo -nv 2>&1)
 ## exécute la commande et vérifie qu'elle s'est éxécuté avec succés
 if [ $? -eq 0 ]; then
@@ -12,12 +6,15 @@ echo "Installation en cours ..."
   if which git | grep -q '^/'; then
     ## cacher le résultat du git clone
     echo "Téléchargement du programme chat ..."
-    telechargementEtInstallation
   else
     ## la commande git n'est pas présente sur l'os
-    echo "Installation programme nécéssaire"
+    echo "Installation programmes nécéssaire"
     sudo apt install git-all
-    telechargementEtInstallation
+    ## Fin installation programme nécéssaire
+    echo "Installation programme nécéssaire fini"
+    ## cacher le résultat du git clone
+    echo "Téléchargement du programme chat ..."
+  git clone https://github.com/Xavier-Corbier/Projet-raspberry.git > /dev/null 2>&1
   fi
 elif echo $commande | grep -q '^sudo:'; then
 ## il est nécéssaire de demander le mot de passe pour avoir l'accès sudoers
