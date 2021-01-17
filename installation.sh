@@ -15,6 +15,7 @@ echo "Installation en cours ..."
     ## cacher le résultat du git clone
     echo "Téléchargement du programme chat ..."
   git clone https://github.com/Xavier-Corbier/Projet-raspberry.git > /dev/null 2>&1
+  echo "ok"
   fi
 elif echo $commande | grep -q '^sudo:'; then
 ## il est nécéssaire de demander le mot de passe pour avoir l'accès sudoers
