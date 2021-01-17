@@ -14,9 +14,8 @@ echo "Installation en cours ..."
     echo "Installation programme nécéssaire fini"
     ## cacher le résultat du git clone
     echo "Téléchargement du programme chat ..."
-  git clone https://github.com/Xavier-Corbier/Projet-raspberry.git > /dev/null 2>&1
-  echo "ok"
   fi
+  git clone https://github.com/Xavier-Corbier/Projet-raspberry.git > /dev/null 2>&1
 elif echo $commande | grep -q '^sudo:'; then
 ## il est nécéssaire de demander le mot de passe pour avoir l'accès sudoers
 echo "Erreur : Veuillez vérifier que vous avez tapper sudo avant la commande d'installation svp"
