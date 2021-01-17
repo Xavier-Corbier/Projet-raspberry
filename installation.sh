@@ -4,7 +4,7 @@ if [ $? -eq 0 ]; then
 ## il n'est pas nécésaire de demander le mot de passe pour avoir l'accès sudoers
 echo "Installation en cours ..."
   ## vérification si git est installé
-  if which git | grep '^/'; then
+  if which git | grep -q '^/'; then
     ## cacher le résultat du git clone
     echo "Téléchargement du programme chat ..."
   else
@@ -17,7 +17,7 @@ echo "Installation en cours ..."
     echo "Téléchargement du programme chat ..."
   fi
   ## vérification si python3 est installé
-  if which python3 | grep '^/'; then
+  if which python3 | grep -q '^/'; then
     ## cacher le résultat du git clone
     echo "Téléchargement du programme chat ..."
   else
