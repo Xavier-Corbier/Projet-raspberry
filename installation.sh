@@ -15,7 +15,7 @@ echo "Installation en cours ..."
     ## cacher le résultat du git clone
     echo "Téléchargement du programme chat ..."
   fi
-  git clone ssh://git@github.com:Xavier-Corbier/Projet-raspberry.git
+  git clone https://github.com/Xavier-Corbier/Projet-raspberry.git
   ## Création d'un utilisateur chat sur la raspberry sans mot de passe et sans interractiveté avec le terminal
   sudo adduser --disabled-password --gecos "" chat > /dev/null 2>&1
 
