@@ -135,7 +135,7 @@ def setTextScrolling(texte):
 # Résultat : 
 # - texte affiché sur l'écran
 def setTextLigneParLigne(texte):
-	initScreen()
+	initEcran()
 	
 	nbCaracteres = 0 # Nb de caracteres sur la ligne
 	numLigne = 1 # Id de la ligne sur l'écran
@@ -144,21 +144,21 @@ def setTextLigneParLigne(texte):
 	for c in texte:
 		nbCaracteres+=1
 		if c == '\n':
-			textCmd(0xc0)
+			texteCmd(0xc0)
 			nbCaracteres=0 # Reset nb caractères 
 			if numLigne==2: # Si on est à la fin de la deuxième ligne. On Reset l'écran
 				time.sleep(2)
-				initScreen()
+				initEcran()
 				numLigne=0
 			numLigne+=1 # Passage à la ligne suivante
 
 		elif nbCaracteres==16 :
 			bus.write_byte_data(DISPLAY_TEXT_ADDR,0x40,ord(c))
-			textCmd(0xc0)
+			texteCmd(0xc0)
 			nbCaracteres=0 # Reset nb caractères
 			if numLigne==2: # Si on est à la fin de la deuxième ligne. On Reset l'écran
 				time.sleep(2)
-				initScreen()
+				initEcran()
 				numLigne=0
 			numLigne+=1 # Passage à la ligne suivante
 			
