@@ -1,4 +1,6 @@
 from drivers.driverLED import *
+from drivers.driverLCD import *
+from drivers.driverBouton import *
 import time
 class GestionCapteurs(object):
     def alumerLed(self):
@@ -9,5 +11,21 @@ class GestionCapteurs(object):
             setValeurLED(0)
         except Exception:
             pass
-if __name__ == "__main__":
-    GestionCapteurs.alumerLed()
+
+    def afficherMessage(self, message):
+        try :
+            setTextLigneParLigne(message)
+        except Exception:
+            pass
+
+    def boutonEstActif(self):
+        try :
+            initBouton()
+            return boutonActif()
+        except Exception:
+            pass
+            return False
+
+if _name_ == "_main_":
+    test = GestionCapteurs()
+    test.allumerLed()

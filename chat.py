@@ -1,5 +1,5 @@
 import curses, threading,curses.textpad,signal,time,os
-from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo
+from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo, pluginGestionCapteurs as pgc
 
 # Class qui permet le fonctionnement général du chat (envoi / récupération messages, gestion utilisateurs, affichage)
 

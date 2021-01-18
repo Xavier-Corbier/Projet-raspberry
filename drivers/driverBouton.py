@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import grovepi
+from drivers.grovepi import *
 
 # Connecte le Grove Switch au port digital D3
 BOUTON_PORT = 3
@@ -11,7 +11,7 @@ BOUTON_PORT = 3
 # Résultat :
 # - bouton initialisé
 def initBouton():
-	grovepi.pinMode(BOUTON_PORT,"INPUT")
+	pinMode(BOUTON_PORT,"INPUT")
 
 # Vérifie si le bouton est appuyé
 # Précondition :
@@ -19,4 +19,4 @@ def initBouton():
 # Résultat :
 # - Boolean : True si le bouton est actif sinon False
 def boutonActif():
-	return grovepi.digitalRead(BOUTON_PORT)
+	return digitalRead(BOUTON_PORT)
