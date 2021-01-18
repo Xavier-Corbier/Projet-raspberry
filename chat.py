@@ -330,12 +330,17 @@ class Chat(object):
         # Récupération des dimensions de la chat zone
         y, x = self.chatZone.getmaxyx()
         ligne = str(utilisateur) + ' : ' + str(chat)
+        texte = ligne
         try:
             # Si le message est trop long
             if len(ligne)>x :
-                self.chatZone.addstr(y-1-self.messageNombre, 0, ligne[:x-1])
+                texte = ligne[:x-1]
+
+            if self.nomUtilisateur == utilisateur :
+                self.chatZone.addstr(y-1-self.messageNombre, 0, texte, curses.A_BOLD)
             else :
-                self.chatZone.addstr(y-1-self.messageNombre, 0, ligne)
+                self.chatZone.addstr(y-1-self.messageNombre, 0, texte)
+
         except Exception:
             with self.mutex :
                 self.rechargementChat()
