@@ -1,5 +1,6 @@
 import curses, threading,curses.textpad,signal,time,os
-from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo, pluginGestionCapteurs as pgc
+from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo
+#from plugins import pluginGestionCapteurs as pgc
 
 # Class qui permet le fonctionnement général du chat (envoi / récupération messages, gestion utilisateurs, affichage)
 
@@ -18,6 +19,8 @@ class Chat(object):
         # Connexion aux données des appli de gestion de Messages et Utilisateurs
         self.gestionMessages = pgm.GestionMessages()
         self.gestionUtilisateurs = pgu.GestionUtilisateurs()
+        # Gestion des capteurs
+        #self.gestionCapteurs = pgc.GestionCapteurs()
         # Création du mutex
         self.mutex=threading.Lock()
         # Nettoyer l'écran
@@ -35,7 +38,7 @@ class Chat(object):
         curses.noecho()
         curses.cbreak()
         # Pas de delai à l'affichage
-        self.stdscr.nodelay(0)
+        self.stdscr.nodelay(1)
         # Récupération du caractère pour supprimer
         self.charSuppression = curses.erasechar()
         # Ne pas afficher de curseurs à l'écran
@@ -43,6 +46,9 @@ class Chat(object):
         curses.doupdate()
         # Mise en place de l'affichage
         self.initialisationAffichage()
+        # Conditions d'affichage
+        self.afficherLed = False
+        self.afficherEcran = False
 
     # Initialise l'affichage du chat
     # Résultat :
@@ -119,6 +125,7 @@ class Chat(object):
         # Bordures de la fenètre
         self.utilisateurFenetre.box()
         self.utilisateurFenetre.refresh()
+        self.lignesVides = 0
         self.rechargementUtilisateur()
 
     ##
@@ -137,10 +144,17 @@ class Chat(object):
         self.messageNombre = 0
         listeMessage = self.gestionMessages.listeDesMessages()
         # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
-        while self.messageNombre  < y  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
+        while self.messageNombre  < y - self.lignesVides  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
             message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
-            self.afficherMessage(message[0],message[1])
+            try :
+                self.afficherMessage(message[0],message[1])
+            except Exception :
+                self.messageNombre+=1
+                pass
         self.messageNombreHistorique = len(listeMessage)-self.messageNombre
+        if len(listeMessage)!=0:
+            if listeMessage[self.messageNombre-1][0] !="pi" and listeMessage[self.messageNombre-1][0] != "" and listeMessage[self.messageNombre-1][1]!="" :
+                self.afficherLed=True
 
     # Recharge la partie utilisateur du chat
     # Résultat :
@@ -152,6 +166,7 @@ class Chat(object):
         y, x = self.utilisateurZone.getmaxyx()
         # Rechargement de la liste des utilisateurs
         self.utilisateurIndice = 0
+        self.nombreUtilisateurs = 0
         listeUtilisateurs = self.gestionUtilisateurs.listeDesUtilisateurs()
         for user in listeUtilisateurs :
             try:
@@ -162,6 +177,8 @@ class Chat(object):
             except Exception :
                 pass
             self.utilisateurIndice+=1
+            if user !="" :
+                self.nombreUtilisateurs+=1
         self.utilisateurZone.refresh()
 
     # Recharge la partie texte du chat
@@ -187,75 +204,87 @@ class Chat(object):
     # Résultat :
     # - Les commandes sont traités
     def message(self, char):
-        # Si le chat est actif
-        if self.actif :
-            # Si on envoie un message
-            if chr(char) == "\n" :
-                # Si il correspond à un changement de nom d'utilisateur
-                if self.text == ":changerNom" :
-                    self.stoper()
-                    # Démarrage d'une FenetreOption
-                    option = curses.wrapper(pfo.FenetreOption)
-                    option.initialisation(["Changement de pseudo :","(Appuyez sur Entrée pour quitter)"])
-                    # Récupération de la réponse
-                    reponse = option.lancer()
-                    if reponse != "" :
-                        self.nomUtilisateur = reponse
-                    # Redémarrage du chat
-                    self.lancer()
-                # Si on veut accéder aux option
-                elif self.text == ":option" :
-                    self.stoper()
-                    # Démarrage d'une FenetreOption
-                    option = curses.wrapper(pfo.FenetreOption)
-                    option.initialisation(["Option du chat :","(Appuyez sur Entrée pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement", ":p - Messages précédent", ":s Messages suivant", ":quitter - Quitter le chat"],False)
-                    # Récupération de la réponse
-                    _ = option.lancer()
-                    # Redémarrage du chat
-                    self.lancer()
-                # Si on veut accéder aux messages précédent
-                elif self.text == ":p" :
-                    # Si on remonte pas plus de messages qu'il en existe
-                    if self.nombreMessageRemoter < self.messageNombre + self.messageNombreHistorique - 1 :
-                        self.nombreMessageRemoter +=1
-                    with self.mutex:
+        try :
+            # Si le chat est actif
+            if self.actif :
+                # Si on envoie un message
+                if chr(char) == "\n" :
+                    # Si il correspond à un changement de nom d'utilisateur
+                    if self.text == ":changerNom" :
+                        self.stoper()
+                        # Démarrage d'une FenetreOption
+                        option = curses.wrapper(pfo.FenetreOption)
+                        option.initialisation(["Changement de pseudo :","(Appuyez sur Entrée pour quitter)"])
+                        # Récupération de la réponse
+                        reponse = option.lancer()
+                        if reponse != "" :
+                            self.nomUtilisateur = reponse
+                        # Redémarrage du chat
+                        self.lancer()
+                    # Si on veut effacer notre écran
+                    elif self.text == ":effacerEcran":
+                        self.text =""
+                        self.rechargementTexteZone()
+                        y, x = self.chatZone.getmaxyx()
+                        self.lignesVides = y
                         self.rechargementChat()
-                        self.text=""
+                    # Si on veut accéder aux option
+                    elif self.text == ":option" :
+                        self.stoper()
+                        # Démarrage d'une FenetreOption
+                        option = curses.wrapper(pfo.FenetreOption)
+                        option.initialisation(["Option du chat :","(Appuyez sur Ctrl + C pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement",":effacerEcran - Effacer la fenetre de messages de l'écran", ":p - Messages précédent", ":s Messages suivant", ":quitter - Quitter le chat"],False)
+                        # Récupération de la réponse
+                        _ = option.lancer()
+                        # Redémarrage du chat
+                        self.lancer()
+                    # Si on veut accéder aux messages précédent
+                    elif self.text == ":p" :
+                        # Si on remonte pas plus de messages qu'il en existe
+                        if self.nombreMessageRemoter < self.messageNombre + self.messageNombreHistorique - 1 :
+                            self.nombreMessageRemoter +=1
+                            self.lignesVides = 0
+                        with self.mutex:
+                            self.rechargementChat()
+                            self.text=""
+                        with self.mutex:
+                            self.rechargementTexteZone()
+                    # Si on veut accéder aux messages suivant
+                    elif self.text == ":s" :
+                        # Si le nombre de messages remonté est positif
+                        if self.nombreMessageRemoter > 0:
+                            self.nombreMessageRemoter -=1
+                            self.lignesVides = 0
+                        with self.mutex:
+                            self.rechargementChat()
+                            self.text=""
+                        with self.mutex:
+                            self.rechargementTexteZone()
+                    # Si on veut quitter le chat
+                    elif self.text == ":quitter" :
+                        self.stoper()
+                    # Sinon on envoie le message
+                    else :
+                        if self.nombreMessageRemoter != 0:
+                            self.nombreMessageRemoter =0
+                        self.envoyerMessage()
+                    return
+                # Si on est en train de supprimer
+                elif chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
+                    self.effacer()
+                    return
+                # Sinon on ajoute le caractère à l'écran
+                else:
+                    y, x = self.chatZone.getmaxyx()
+                    if len(self.text)+1 < x:
+                        self.text += chr(char)
                     with self.mutex:
                         self.rechargementTexteZone()
-                # Si on veut accéder aux messages suivant
-                elif self.text == ":s" :
-                    # Si le nombre de messages remonté est positif
-                    if self.nombreMessageRemoter > 0:
-                        self.nombreMessageRemoter -=1
-                    with self.mutex:
-                        self.rechargementChat()
-                        self.text=""
-                    with self.mutex:
-                        self.rechargementTexteZone()
-                # Si on veut quitter le chat
-                elif self.text == ":quitter" :
-                    self.stoper()
-                # Sinon on envoie le message
-                else :
-                    if self.nombreMessageRemoter != 0:
-                        self.nombreMessageRemoter =0
-                    self.envoyerMessage()
+                    return
+            # Si on est pas actif on s'arrête
+            else :
                 return
-            # Si on est en train de supprimer
-            elif chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
-                self.effacer()
-                return
-            # Sinon on ajoute le caractère à l'écran
-            else:
-                y, x = self.chatZone.getmaxyx()
-                if len(self.text)+1 < x:
-                    self.text += chr(char)
-                with self.mutex:
-                    self.rechargementTexteZone()
-                return
-        # Si on est pas actif on s'arrête
-        else :
+        except Exception :
             return
 
     # Efface le dernier caractère écrit sur la partie texte du chat
@@ -286,6 +315,8 @@ class Chat(object):
             # Si le nombre est différent de celui que l'on connait et si on remonte pas des messages
             if self.messageNombre + self.messageNombreHistorique != len(listeMessage) and self.nombreMessageRemoter==0:
                 with self.mutex :
+                    if self.lignesVides > 0 :
+                        self.lignesVides-=1
                     self.rechargementChat()
 
     # Envoie le message écrit sur le chat
@@ -311,12 +342,17 @@ class Chat(object):
         # Récupération des dimensions de la chat zone
         y, x = self.chatZone.getmaxyx()
         ligne = str(utilisateur) + ' : ' + str(chat)
+        texte = ligne
         try:
             # Si le message est trop long
             if len(ligne)>x :
-                self.chatZone.addstr(y-1-self.messageNombre, 0, ligne[:x-1])
+                texte = ligne[:x-1]
+
+            if self.nomUtilisateur == utilisateur :
+                self.chatZone.addstr(y-1-self.messageNombre, 0, texte, curses.A_BOLD)
             else :
-                self.chatZone.addstr(y-1-self.messageNombre, 0, ligne)
+                self.chatZone.addstr(y-1-self.messageNombre, 0, texte)
+
         except Exception:
             with self.mutex :
                 self.rechargementChat()
@@ -355,6 +391,44 @@ class Chat(object):
     def supprimerUtilisateur(self):
         self.gestionUtilisateurs.supprimerUtilisateur(self.nomUtilisateur)
 
+    # Ejecte tout les utilisateurs
+    def ejectionUtilisateurs(self):
+        self.gestionUtilisateurs.initialisationNombreUtilisateurs()
+
+    ##
+    #   PARTIE VERIFICATION
+    ##
+
+    # Vérifie si un capteur doit être activé
+    # Précondition :
+    # - Doit être utilisé avec un Thread
+    # Résultat :
+    # - Les capteurs sont contrôlé
+    def verificationCapteurs(self):
+        while self.actif :
+            time.sleep(0.1)
+            if self.afficherLed :
+                #self.gestionCapteurs.alumerLed()
+                print("j'allume la led")
+                self.afficherLed = False
+            if self.afficherEcran :
+                #self.gestionCapteurs.afficherMessage(str(self.nombreUtilisateurs))
+                print("J'affiche l'écran")
+                self.afficherEcran = False
+            #if self.gestionCapteurs.boutonEstActif() :
+                #self.ejectionUtilisateurs()
+
+    # Vérifie si l'utilisateur est enregistré
+    # Précondition :
+    # - Doit être utilisé avec un Thread
+    # Résultat :
+    # - L'activité est stoppé si l'utilisateur n'est plus enregistré
+    def verificationSiEstEnregistre(self):
+        while self.actif :
+            time.sleep(0.1)
+            if not self.gestionUtilisateurs.estUnUtilisateurEnregistre(self.nomUtilisateur):
+                self.actif = False
+
     ##
     #   PARTIE ACTIVITE PROGRAMME
     ##
@@ -370,13 +444,20 @@ class Chat(object):
         # Lancement des threads
         threading.Thread(target=self.recupererMessages).start()
         threading.Thread(target=self.recupererUtilisateurs).start()
+        threading.Thread(target=self.verificationCapteurs).start()
+        threading.Thread(target=self.verificationSiEstEnregistre).start()
+        # Demande d'afficher le nombre d'utilisateur à l'écran
+        self.afficherEcran=True
         # Ajout du signal pour stopper avec un ctrl + C
         signal.signal(signal.SIGINT, self.stoper)
+        # Aucun délai au clavier
+        self.texteFenetre.nodelay(1)
         # Tant que le chat est actif
         while self.actif:
             # On récupère les caractères saisie au clavier et on les traitent
             caractere = self.texteFenetre.getch()
             self.message(caractere)
+        self.stoper()
 
     # Stoppe le chat
     # Précondition :
@@ -384,11 +465,18 @@ class Chat(object):
     # Résultat :
     # - Le chat est stoppé
     def stoper(self,signum=None, frame=None):
+        # sauvegarde du dernier nombre d'utulisateurs
+        nombreUtilisateurs = self.nombreUtilisateurs
         # Fermeture du chat
         self.actif=False
         self.supprimerUtilisateur()
         # Attendre que les threads se terminent
         time.sleep(0.1)
+        self.texteFenetre.nodelay(0)
+
+
+        # Afficher le dernier nombre d'utilisateurs
+        #self.gestionCapteurs.afficherMessage(str(nombreUtilisateurs-1))
         # Nettoyer l'écran
         self.stdscr.clear()
         # Fermeture de la fenètre
