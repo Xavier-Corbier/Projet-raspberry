@@ -31,8 +31,8 @@ def initEcran():
 # Résultat :
 # - commande appliqué
 def texteCmd(cmd):
-        time.sleep(0.1)
-        bus.write_byte_data(DISPLAY_TEXT_ADDR,0x80,cmd)
+	time.sleep(0.1)
+	bus.write_byte_data(DISPLAY_TEXT_ADDR,0x80,cmd)
 
 ##
 #   GESTION DE LA COULEUR
@@ -52,7 +52,7 @@ def setRGB(rouge,vert,bleu):
 	bus.write_byte_data(DISPLAY_RGB_ADDR,0x03,vert)
 	bus.write_byte_data(DISPLAY_RGB_ADDR,0x04,rouge)
 	bus.write_byte_data(DISPLAY_RGB_ADDR,0x08,0xAA)
-	#print("Couleur écran changée")
+#print("Couleur écran changée")
 
 # Met à jour la coleur de l'écran en fonction d'un nom en chaine de caractère
 # Précondition :
@@ -70,7 +70,7 @@ def setCouleur(couleur):
 	elif(color=="noir"):
 		setRGB(0,0,0)
 	elif(color=="blanc"):
-                setRGB(255,255,255)
+		setRGB(255,255,255)
 
 ##
 #   GESTION DE L'AFFICHAGE
@@ -84,7 +84,7 @@ def setCouleur(couleur):
 # - texte affiché sur l'écran
 def setTextScrolling(texte):
 	initEcran()
-	
+
 	nbCaracteres = 0 # Nb de caractères sur la ligne
 	numLigne = 1 # Id de la ligne de l'écran
 	tempTableau = [] # Sauvegarde temporaire du texte
@@ -120,23 +120,23 @@ def setTextScrolling(texte):
 				tempTableau=[]
 				numLigne=1
 			numLigne+=1 # Passage à la ligne suivante
-			
+
 		else:
 			bus.write_byte_data(DISPLAY_TEXT_ADDR,0x40,ord(c))
 			if numLigne == 2 : # sauvegarde de la dernière ligne du tableau
 				tempTableau.append(c)
 
-	print ("texte ecrit")
+
 
 # Fonction permettant d'ecrire le texte recu en parametre (LigneParLigne)
 # Si le texte contient un \n ou plus de 16 caracteres un passage à la ligne se fait
 # Précondition :
 # - texte : chaine de caractère
-# Résultat : 
+# Résultat :
 # - texte affiché sur l'écran
 def setTextLigneParLigne(texte):
 	initEcran()
-	
+
 	nbCaracteres = 0 # Nb de caracteres sur la ligne
 	numLigne = 1 # Id de la ligne sur l'écran
 
@@ -145,7 +145,7 @@ def setTextLigneParLigne(texte):
 		nbCaracteres+=1
 		if c == '\n':
 			texteCmd(0xc0)
-			nbCaracteres=0 # Reset nb caractères 
+			nbCaracteres=0 # Reset nb caractères
 			if numLigne==2: # Si on est à la fin de la deuxième ligne. On Reset l'écran
 				time.sleep(2)
 				initEcran()
@@ -161,9 +161,8 @@ def setTextLigneParLigne(texte):
 				initEcran()
 				numLigne=0
 			numLigne+=1 # Passage à la ligne suivante
-			
-			
+
+
 		else:
 			bus.write_byte_data(DISPLAY_TEXT_ADDR,0x40,ord(c))
-		
-	print ("texte ecrit")
+
