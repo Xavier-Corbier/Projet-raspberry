@@ -416,11 +416,15 @@ class Chat(object):
     # Résultat :
     # - Le chat est stoppé
     def stoper(self,signum=None, frame=None):
+        # sauvegarde du dernier nombre d'utulisateurs
+        nombreUtilisateurs = self.nombreUtilisateurs
         # Fermeture du chat
         self.supprimerUtilisateur()
         self.actif=False
         # Attendre que les threads se terminent
         time.sleep(0.1)
+        # Afficher le dernier nombre d'utilisateurs
+        #self.gestionCapteurs.afficherMessage(str(nombreUtilisateurs-1))
         # Nettoyer l'écran
         self.stdscr.clear()
         # Fermeture de la fenètre
