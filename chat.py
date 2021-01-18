@@ -1,5 +1,5 @@
 import curses, threading,curses.textpad,signal,time,os
-from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo, pluginGestionCapteurs as pgc
+from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo
 
 # Class qui permet le fonctionnement général du chat (envoi / récupération messages, gestion utilisateurs, affichage)
 
@@ -43,6 +43,9 @@ class Chat(object):
         curses.doupdate()
         # Mise en place de l'affichage
         self.initialisationAffichage()
+        # Conditions d'affichage
+        self.afficherLed = False
+        self.afficherEcran = False
 
     # Initialise l'affichage du chat
     # Résultat :
@@ -139,8 +142,15 @@ class Chat(object):
         # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
         while self.messageNombre  < y  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
             message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
-            self.afficherMessage(message[0],message[1])
+            try :
+                self.afficherMessage(message[0],message[1])
+            except Exception :
+                self.messageNombre+=1
+                pass
         self.messageNombreHistorique = len(listeMessage)-self.messageNombre
+        if len(listeMessage)!=0:
+            if listeMessage[self.messageNombre-1][0] !="pi" and listeMessage[self.messageNombre-1][0] != "" and listeMessage[self.messageNombre-1][1]!="" :
+                self.afficherLed=True
 
     # Recharge la partie utilisateur du chat
     # Résultat :
@@ -152,6 +162,7 @@ class Chat(object):
         y, x = self.utilisateurZone.getmaxyx()
         # Rechargement de la liste des utilisateurs
         self.utilisateurIndice = 0
+        self.nombreUtilisateurs = 0
         listeUtilisateurs = self.gestionUtilisateurs.listeDesUtilisateurs()
         for user in listeUtilisateurs :
             try:
@@ -162,6 +173,8 @@ class Chat(object):
             except Exception :
                 pass
             self.utilisateurIndice+=1
+            if user !="" :
+                self.nombreUtilisateurs+=1
         self.utilisateurZone.refresh()
 
     # Recharge la partie texte du chat
@@ -355,6 +368,14 @@ class Chat(object):
     def supprimerUtilisateur(self):
         self.gestionUtilisateurs.supprimerUtilisateur(self.nomUtilisateur)
 
+    # Vérifie si un capteur doit être activé
+    def verificationCapteurs(self):
+        while self.actif :
+            if self.afficherLed :
+                #self.gestionCapteurs.alumerLed()
+                print("j'allume la led")
+                self.afficherLed = False
+
     ##
     #   PARTIE ACTIVITE PROGRAMME
     ##
@@ -370,6 +391,9 @@ class Chat(object):
         # Lancement des threads
         threading.Thread(target=self.recupererMessages).start()
         threading.Thread(target=self.recupererUtilisateurs).start()
+        threading.Thread(target=self.verificationCapteurs).start()
+        # Demande d'afficher le nombre d'utilisateur à l'écran
+        self.afficherEcran=True
         # Ajout du signal pour stopper avec un ctrl + C
         signal.signal(signal.SIGINT, self.stoper)
         # Tant que le chat est actif
