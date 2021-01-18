@@ -26,6 +26,3 @@ class GestionCapteurs(object):
             pass
             return False
 
-if _name_ == "_main_":
-    test = GestionCapteurs()
-    test.allumerLed()
