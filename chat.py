@@ -125,6 +125,7 @@ class Chat(object):
         # Bordures de la fenètre
         self.utilisateurFenetre.box()
         self.utilisateurFenetre.refresh()
+        self.lignesVides = 0
         self.rechargementUtilisateur()
 
     ##
@@ -143,7 +144,7 @@ class Chat(object):
         self.messageNombre = 0
         listeMessage = self.gestionMessages.listeDesMessages()
         # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
-        while self.messageNombre  < y  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
+        while self.messageNombre  < y - self.lignesVides  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
             message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
             try :
                 self.afficherMessage(message[0],message[1])
@@ -220,12 +221,19 @@ class Chat(object):
                             self.nomUtilisateur = reponse
                         # Redémarrage du chat
                         self.lancer()
+                    # Si on veut effacer notre écran
+                    elif self.text == ":effacerEcran":
+                        self.text =""
+                        self.rechargementTexteZone()
+                        y, x = self.chatZone.getmaxyx()
+                        self.lignesVides = y
+                        self.rechargementChat()
                     # Si on veut accéder aux option
                     elif self.text == ":option" :
                         self.stoper()
                         # Démarrage d'une FenetreOption
                         option = curses.wrapper(pfo.FenetreOption)
-                        option.initialisation(["Option du chat :","(Appuyez sur Entrée pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement", ":p - Messages précédent", ":s Messages suivant", ":quitter - Quitter le chat"],False)
+                        option.initialisation(["Option du chat :","(Appuyez sur Ctrl + C pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement",":effacerEcran - Effacer la fenetre de messages de l'écran", ":p - Messages précédent", ":s Messages suivant", ":quitter - Quitter le chat"],False)
                         # Récupération de la réponse
                         _ = option.lancer()
                         # Redémarrage du chat
@@ -235,6 +243,7 @@ class Chat(object):
                         # Si on remonte pas plus de messages qu'il en existe
                         if self.nombreMessageRemoter < self.messageNombre + self.messageNombreHistorique - 1 :
                             self.nombreMessageRemoter +=1
+                            self.lignesVides = 0
                         with self.mutex:
                             self.rechargementChat()
                             self.text=""
@@ -245,6 +254,7 @@ class Chat(object):
                         # Si le nombre de messages remonté est positif
                         if self.nombreMessageRemoter > 0:
                             self.nombreMessageRemoter -=1
+                            self.lignesVides = 0
                         with self.mutex:
                             self.rechargementChat()
                             self.text=""
@@ -305,6 +315,8 @@ class Chat(object):
             # Si le nombre est différent de celui que l'on connait et si on remonte pas des messages
             if self.messageNombre + self.messageNombreHistorique != len(listeMessage) and self.nombreMessageRemoter==0:
                 with self.mutex :
+                    if self.lignesVides > 0 :
+                        self.lignesVides-=1
                     self.rechargementChat()
 
     # Envoie le message écrit sur le chat
@@ -460,6 +472,9 @@ class Chat(object):
         self.supprimerUtilisateur()
         # Attendre que les threads se terminent
         time.sleep(0.1)
+        self.texteFenetre.nodelay(0)
+
+
         # Afficher le dernier nombre d'utilisateurs
         #self.gestionCapteurs.afficherMessage(str(nombreUtilisateurs-1))
         # Nettoyer l'écran
