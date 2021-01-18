@@ -1,5 +1,6 @@
 import curses, threading,curses.textpad,signal,time,os
 from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo
+#from plugins import pluginGestionCapteurs as pgc
 
 # Class qui permet le fonctionnement général du chat (envoi / récupération messages, gestion utilisateurs, affichage)
 
@@ -18,6 +19,8 @@ class Chat(object):
         # Connexion aux données des appli de gestion de Messages et Utilisateurs
         self.gestionMessages = pgm.GestionMessages()
         self.gestionUtilisateurs = pgu.GestionUtilisateurs()
+        # Gestion des capteurs
+        #self.gestionCapteurs = pgc.GestionCapteurs()
         # Création du mutex
         self.mutex=threading.Lock()
         # Nettoyer l'écran
@@ -371,10 +374,15 @@ class Chat(object):
     # Vérifie si un capteur doit être activé
     def verificationCapteurs(self):
         while self.actif :
+            time.sleep(0.1)
             if self.afficherLed :
                 #self.gestionCapteurs.alumerLed()
                 print("j'allume la led")
                 self.afficherLed = False
+            if self.afficherEcran :
+                #self.gestionCapteurs.afficherMessage(str(self.nombreUtilisateurs))
+                print("J'affiche l'écran")
+                self.afficherEcran = False
 
     ##
     #   PARTIE ACTIVITE PROGRAMME
@@ -409,8 +417,8 @@ class Chat(object):
     # - Le chat est stoppé
     def stoper(self,signum=None, frame=None):
         # Fermeture du chat
-        self.actif=False
         self.supprimerUtilisateur()
+        self.actif=False
         # Attendre que les threads se terminent
         time.sleep(0.1)
         # Nettoyer l'écran
