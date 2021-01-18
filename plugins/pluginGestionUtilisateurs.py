@@ -57,3 +57,20 @@ class GestionUtilisateurs(object):
             fichier.close()
             # Décomposition du fichier en ligne
             return utilisateurs.split("\n")
+
+    # Vérifie si un utilisateur est un utilisateur encore enregistré
+    # Résultat :
+    # - Un booléen à True si l'utilisateur est encore enregistré
+    def estUnUtilisateurEnregistre(self, utilisateur):
+        # Récupération des utilisateurs actuels
+        listeUtilisateurs = self.listeDesUtilisateurs()
+        resultat = False
+        for user in listeUtilisateurs:
+            if user == utilisateur :
+                resultat = True
+        return resultat
+
+    # Vide le fichier Utilisateur
+    def initialisationNombreUtilisateurs(self):
+        lienDossier = os.path.dirname(os.path.realpath('__file__'))
+        fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "w")

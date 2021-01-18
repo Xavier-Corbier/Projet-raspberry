@@ -38,7 +38,7 @@ class Chat(object):
         curses.noecho()
         curses.cbreak()
         # Pas de delai à l'affichage
-        self.stdscr.nodelay(0)
+        self.stdscr.nodelay(1)
         # Récupération du caractère pour supprimer
         self.charSuppression = curses.erasechar()
         # Ne pas afficher de curseurs à l'écran
@@ -203,75 +203,78 @@ class Chat(object):
     # Résultat :
     # - Les commandes sont traités
     def message(self, char):
-        # Si le chat est actif
-        if self.actif :
-            # Si on envoie un message
-            if chr(char) == "\n" :
-                # Si il correspond à un changement de nom d'utilisateur
-                if self.text == ":changerNom" :
-                    self.stoper()
-                    # Démarrage d'une FenetreOption
-                    option = curses.wrapper(pfo.FenetreOption)
-                    option.initialisation(["Changement de pseudo :","(Appuyez sur Entrée pour quitter)"])
-                    # Récupération de la réponse
-                    reponse = option.lancer()
-                    if reponse != "" :
-                        self.nomUtilisateur = reponse
-                    # Redémarrage du chat
-                    self.lancer()
-                # Si on veut accéder aux option
-                elif self.text == ":option" :
-                    self.stoper()
-                    # Démarrage d'une FenetreOption
-                    option = curses.wrapper(pfo.FenetreOption)
-                    option.initialisation(["Option du chat :","(Appuyez sur Entrée pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement", ":p - Messages précédent", ":s Messages suivant", ":quitter - Quitter le chat"],False)
-                    # Récupération de la réponse
-                    _ = option.lancer()
-                    # Redémarrage du chat
-                    self.lancer()
-                # Si on veut accéder aux messages précédent
-                elif self.text == ":p" :
-                    # Si on remonte pas plus de messages qu'il en existe
-                    if self.nombreMessageRemoter < self.messageNombre + self.messageNombreHistorique - 1 :
-                        self.nombreMessageRemoter +=1
-                    with self.mutex:
-                        self.rechargementChat()
-                        self.text=""
+        try :
+            # Si le chat est actif
+            if self.actif :
+                # Si on envoie un message
+                if chr(char) == "\n" :
+                    # Si il correspond à un changement de nom d'utilisateur
+                    if self.text == ":changerNom" :
+                        self.stoper()
+                        # Démarrage d'une FenetreOption
+                        option = curses.wrapper(pfo.FenetreOption)
+                        option.initialisation(["Changement de pseudo :","(Appuyez sur Entrée pour quitter)"])
+                        # Récupération de la réponse
+                        reponse = option.lancer()
+                        if reponse != "" :
+                            self.nomUtilisateur = reponse
+                        # Redémarrage du chat
+                        self.lancer()
+                    # Si on veut accéder aux option
+                    elif self.text == ":option" :
+                        self.stoper()
+                        # Démarrage d'une FenetreOption
+                        option = curses.wrapper(pfo.FenetreOption)
+                        option.initialisation(["Option du chat :","(Appuyez sur Entrée pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement", ":p - Messages précédent", ":s Messages suivant", ":quitter - Quitter le chat"],False)
+                        # Récupération de la réponse
+                        _ = option.lancer()
+                        # Redémarrage du chat
+                        self.lancer()
+                    # Si on veut accéder aux messages précédent
+                    elif self.text == ":p" :
+                        # Si on remonte pas plus de messages qu'il en existe
+                        if self.nombreMessageRemoter < self.messageNombre + self.messageNombreHistorique - 1 :
+                            self.nombreMessageRemoter +=1
+                        with self.mutex:
+                            self.rechargementChat()
+                            self.text=""
+                        with self.mutex:
+                            self.rechargementTexteZone()
+                    # Si on veut accéder aux messages suivant
+                    elif self.text == ":s" :
+                        # Si le nombre de messages remonté est positif
+                        if self.nombreMessageRemoter > 0:
+                            self.nombreMessageRemoter -=1
+                        with self.mutex:
+                            self.rechargementChat()
+                            self.text=""
+                        with self.mutex:
+                            self.rechargementTexteZone()
+                    # Si on veut quitter le chat
+                    elif self.text == ":quitter" :
+                        self.stoper()
+                    # Sinon on envoie le message
+                    else :
+                        if self.nombreMessageRemoter != 0:
+                            self.nombreMessageRemoter =0
+                        self.envoyerMessage()
+                    return
+                # Si on est en train de supprimer
+                elif chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
+                    self.effacer()
+                    return
+                # Sinon on ajoute le caractère à l'écran
+                else:
+                    y, x = self.chatZone.getmaxyx()
+                    if len(self.text)+1 < x:
+                        self.text += chr(char)
                     with self.mutex:
                         self.rechargementTexteZone()
-                # Si on veut accéder aux messages suivant
-                elif self.text == ":s" :
-                    # Si le nombre de messages remonté est positif
-                    if self.nombreMessageRemoter > 0:
-                        self.nombreMessageRemoter -=1
-                    with self.mutex:
-                        self.rechargementChat()
-                        self.text=""
-                    with self.mutex:
-                        self.rechargementTexteZone()
-                # Si on veut quitter le chat
-                elif self.text == ":quitter" :
-                    self.stoper()
-                # Sinon on envoie le message
-                else :
-                    if self.nombreMessageRemoter != 0:
-                        self.nombreMessageRemoter =0
-                    self.envoyerMessage()
+                    return
+            # Si on est pas actif on s'arrête
+            else :
                 return
-            # Si on est en train de supprimer
-            elif chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
-                self.effacer()
-                return
-            # Sinon on ajoute le caractère à l'écran
-            else:
-                y, x = self.chatZone.getmaxyx()
-                if len(self.text)+1 < x:
-                    self.text += chr(char)
-                with self.mutex:
-                    self.rechargementTexteZone()
-                return
-        # Si on est pas actif on s'arrête
-        else :
+        except Exception :
             return
 
     # Efface le dernier caractère écrit sur la partie texte du chat
@@ -371,7 +374,19 @@ class Chat(object):
     def supprimerUtilisateur(self):
         self.gestionUtilisateurs.supprimerUtilisateur(self.nomUtilisateur)
 
+    # Ejecte tout les utilisateurs
+    def ejectionUtilisateurs(self):
+        self.gestionUtilisateurs.initialisationNombreUtilisateurs()
+
+    ##
+    #   PARTIE VERIFICATION
+    ##
+
     # Vérifie si un capteur doit être activé
+    # Précondition :
+    # - Doit être utilisé avec un Thread
+    # Résultat :
+    # - Les capteurs sont contrôlé
     def verificationCapteurs(self):
         while self.actif :
             time.sleep(0.1)
@@ -383,6 +398,19 @@ class Chat(object):
                 #self.gestionCapteurs.afficherMessage(str(self.nombreUtilisateurs))
                 print("J'affiche l'écran")
                 self.afficherEcran = False
+            #if self.gestionCapteurs.boutonEstActif() :
+                #self.ejectionUtilisateurs()
+
+    # Vérifie si l'utilisateur est enregistré
+    # Précondition :
+    # - Doit être utilisé avec un Thread
+    # Résultat :
+    # - L'activité est stoppé si l'utilisateur n'est plus enregistré
+    def verificationSiEstEnregistre(self):
+        while self.actif :
+            time.sleep(0.1)
+            if not self.gestionUtilisateurs.estUnUtilisateurEnregistre(self.nomUtilisateur):
+                self.actif = False
 
     ##
     #   PARTIE ACTIVITE PROGRAMME
@@ -400,15 +428,19 @@ class Chat(object):
         threading.Thread(target=self.recupererMessages).start()
         threading.Thread(target=self.recupererUtilisateurs).start()
         threading.Thread(target=self.verificationCapteurs).start()
+        threading.Thread(target=self.verificationSiEstEnregistre).start()
         # Demande d'afficher le nombre d'utilisateur à l'écran
         self.afficherEcran=True
         # Ajout du signal pour stopper avec un ctrl + C
         signal.signal(signal.SIGINT, self.stoper)
+        # Aucun délai au clavier
+        self.texteFenetre.nodelay(1)
         # Tant que le chat est actif
         while self.actif:
             # On récupère les caractères saisie au clavier et on les traitent
             caractere = self.texteFenetre.getch()
             self.message(caractere)
+        self.stoper()
 
     # Stoppe le chat
     # Précondition :
@@ -419,8 +451,8 @@ class Chat(object):
         # sauvegarde du dernier nombre d'utulisateurs
         nombreUtilisateurs = self.nombreUtilisateurs
         # Fermeture du chat
-        self.supprimerUtilisateur()
         self.actif=False
+        self.supprimerUtilisateur()
         # Attendre que les threads se terminent
         time.sleep(0.1)
         # Afficher le dernier nombre d'utilisateurs
