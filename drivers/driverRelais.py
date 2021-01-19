@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import grovepi
+from drivers.grovepi import *
 
 # Connecte le Grove Relay au port digital D4
 RELAIS_PORT = 4
@@ -11,7 +11,7 @@ RELAIS_PORT = 4
 # Résultat :
 # - relais initialisé
 def initRelais():
-	grovepi.pinMode(RELAIS_PORT,"OUTPUT")
+	pinMode(RELAIS_PORT,"OUTPUT")
 
 # Ecrit sur le relais 0 ou 1
 # Précondition :
@@ -19,4 +19,4 @@ def initRelais():
 # Résultat :
 # - relais affecté
 def setValeurRelais(valeur):
-	grovepi.digitalWrite(RELAIS_PORT,valeur)
+	digitalWrite(RELAIS_PORT,valeur)

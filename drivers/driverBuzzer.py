@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import grovepi
+from drivers.grovepi import *
 
 # Connecte le Buzzer au port digital D5
 BUZZER_PORT = 5
@@ -11,7 +11,7 @@ BUZZER_PORT = 5
 # Résultat :
 # - Buzzer initialisé
 def initBuzzer():
-    grovepi.pinMode(BUZZER_PORT,"OUTPUT")
+    pinMode(BUZZER_PORT,"OUTPUT")
 
 # Ecrit sur le Buzzer 0 ou 1
 # Précondition :
@@ -19,4 +19,4 @@ def initBuzzer():
 # Résultat :
 # - Buzzer affecté
 def setValeurBuzzer(valeur):
-    grovepi.digitalWrite(BUZZER_PORT,valeur)
+    digitalWrite(BUZZER_PORT,valeur)

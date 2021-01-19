@@ -70,7 +70,9 @@ class GestionUtilisateurs(object):
                 resultat = True
         return resultat
 
-    # Vide le fichier Utilisateur
+    # Vide les données utilisateur
+    # Résultat :
+    # - Les données utilisateurs sont vidées
     def initialisationNombreUtilisateurs(self):
         lienDossier = os.path.dirname(os.path.realpath('__file__'))
         fichier = open(os.path.join(lienDossier, "données/utilisateurs.txt"), "w")

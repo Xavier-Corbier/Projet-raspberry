@@ -161,13 +161,13 @@ class FenetreOption(object):
     def lancer(self):
         # Ajout du signal pour stopper avec un ctrl + C
         signal.signal(signal.SIGINT, self.stoper)
+        # Si on veut une réponse
         if self.boolReponse:
             self.texteZone.nodelay(0)
         # Tant que l'option est actif
         while self.actif:
             # On récupère les caractères saisie au clavier et on les traitent
             if self.boolReponse:
-                self.texteZone.nodelay(0)
                 caractere = self.texteZone.getch()
                 self.message(caractere)
         # Retourne la réponse à la question
