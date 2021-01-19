@@ -233,33 +233,11 @@ class Chat(object):
                         self.stoper()
                         # Démarrage d'une FenetreOption
                         option = curses.wrapper(pfo.FenetreOption)
-                        option.initialisation(["Option du chat :","(Appuyez sur Ctrl + C pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement",":effacerEcran - Effacer la fenetre de messages de l'écran", ":p - Messages précédent", ":s Messages suivant", ":quitter - Quitter le chat"],False)
+                        option.initialisation(["Option du chat :","(Appuyez sur Ctrl + C pour quitter)", "",":changerNom - Changer de nom d'utilisateur temporairement",":effacerEcran - Effacer la fenetre de messages de l'écran", "KEY_UP - Messages précédent", "KEY_DOWN Messages suivant", ":quitter - Quitter le chat"],False)
                         # Récupération de la réponse
                         _ = option.lancer()
                         # Redémarrage du chat
                         self.lancer()
-                    # Si on veut accéder aux messages précédent
-                    elif self.text == ":p" :
-                        # Si on remonte pas plus de messages qu'il en existe
-                        if self.nombreMessageRemoter < self.messageNombre + self.messageNombreHistorique - 1 :
-                            self.nombreMessageRemoter +=1
-                            self.lignesVides = 0
-                        with self.mutex:
-                            self.rechargementChat()
-                            self.text=""
-                        with self.mutex:
-                            self.rechargementTexteZone()
-                    # Si on veut accéder aux messages suivant
-                    elif self.text == ":s" :
-                        # Si le nombre de messages remonté est positif
-                        if self.nombreMessageRemoter > 0:
-                            self.nombreMessageRemoter -=1
-                            self.lignesVides = 0
-                        with self.mutex:
-                            self.rechargementChat()
-                            self.text=""
-                        with self.mutex:
-                            self.rechargementTexteZone()
                     # Si on veut quitter le chat
                     elif self.text == ":quitter" :
                         self.stoper()
@@ -273,6 +251,22 @@ class Chat(object):
                 elif chr(char) == self.charSuppression or chr(char) == "ć" or chr(char) == "\x7f":
                     self.effacer()
                     return
+                # Si on veut accéder aux messages précédent
+                elif char==curses.KEY_UP :
+                    # Si on remonte pas plus de messages qu'il en existe
+                    if self.nombreMessageRemoter < self.messageNombre + self.messageNombreHistorique - 1 :
+                        self.nombreMessageRemoter +=1
+                        self.lignesVides = 0
+                    with self.mutex:
+                        self.rechargementChat()
+                # Si on veut accéder aux messages suivant
+                elif char==curses.KEY_DOWN :
+                    # Si le nombre de messages remonté est positif
+                    if self.nombreMessageRemoter > 0:
+                        self.nombreMessageRemoter -=1
+                        self.lignesVides = 0
+                    with self.mutex:
+                        self.rechargementChat()
                 # Sinon on ajoute le caractère à l'écran
                 else:
                     y, x = self.chatZone.getmaxyx()
@@ -452,6 +446,7 @@ class Chat(object):
         signal.signal(signal.SIGINT, self.stoper)
         # Aucun délai au clavier
         self.texteFenetre.nodelay(1)
+        self.texteFenetre.keypad(True)
         # Tant que le chat est actif
         while self.actif:
             # On récupère les caractères saisie au clavier et on les traitent
