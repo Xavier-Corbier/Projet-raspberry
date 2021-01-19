@@ -19,7 +19,7 @@ class Chat(object):
         # Connexion aux données des appli de gestion de Messages et Utilisateurs
         self.gestionMessages = pgm.GestionMessages()
         self.gestionUtilisateurs = pgu.GestionUtilisateurs()
-        # Gestion des capteurs
+        # Plugin gestion des capteurs
         #self.gestionCapteurs = pgc.GestionCapteurs()
         # Création du mutex
         self.mutex=threading.Lock()
@@ -82,8 +82,8 @@ class Chat(object):
         # Ajout du titre au centre de l'écran
         name = "Chat"
         try :
-            self.titreFenetre.addstr(2, int(self.maxX/2 - len(name)/2), name)
-            self.titreFenetre.addstr(3, 3, "Options - envoyer :option ")
+            self.titreFenetre.addstr(2, int(self.maxX/2 - len(name)/2), name, curses.A_BOLD)
+            self.titreFenetre.addstr(3, 3, "Options - envoyer :option ", curses.A_BOLD)
         except Exception :
             self.stoper()
             print("Erreur : les dimensions du terminal sont trop faibles")
@@ -118,7 +118,7 @@ class Chat(object):
     def initUtilisateur(self):
         # Ajout colonne utilisateurs
         try :
-            self.utilisateurFenetre.addstr(1, 2, "Utilisateur(s) :")
+            self.utilisateurFenetre.addstr(1, 2, "Utilisateur(s) :", curses.A_BOLD)
         except Exception :
             self.stoper()
             print("Erreur : les dimensions du terminal sont trop faibles")
@@ -152,7 +152,9 @@ class Chat(object):
                 self.messageNombre+=1
                 pass
         self.messageNombreHistorique = len(listeMessage)-self.messageNombre
+        # Si la liste des messages n'est pas vide
         if len(listeMessage)!=0:
+            # Si le dernier message n'est pas celui de pi
             if listeMessage[self.messageNombre-1][0] !="pi" and listeMessage[self.messageNombre-1][0] != "" and listeMessage[self.messageNombre-1][1]!="" :
                 self.afficherLed=True
 
@@ -170,6 +172,7 @@ class Chat(object):
         listeUtilisateurs = self.gestionUtilisateurs.listeDesUtilisateurs()
         for user in listeUtilisateurs :
             try:
+                # Si le nom de l'utilisateur est trop grand
                 if len(user)>x :
                     self.utilisateurZone.addstr(self.utilisateurIndice+3, 0, user[:x-1])
                 else:
@@ -217,6 +220,7 @@ class Chat(object):
                         option.initialisation(["Changement de pseudo :","(Appuyez sur Entrée pour quitter)"])
                         # Récupération de la réponse
                         reponse = option.lancer()
+                        # Si on reçoit une réponse
                         if reponse != "" :
                             self.nomUtilisateur = reponse
                         # Redémarrage du chat
@@ -243,7 +247,9 @@ class Chat(object):
                         self.stoper()
                     # Sinon on envoie le message
                     else :
+                        # Si on été en train de remonter des messages
                         if self.nombreMessageRemoter != 0:
+                            # On revient à l'état classique
                             self.nombreMessageRemoter =0
                         self.envoyerMessage()
                     return
@@ -309,6 +315,7 @@ class Chat(object):
             # Si le nombre est différent de celui que l'on connait et si on remonte pas des messages
             if self.messageNombre + self.messageNombreHistorique != len(listeMessage) and self.nombreMessageRemoter==0:
                 with self.mutex :
+                    # Si on avait des lignes vides on en supprime une
                     if self.lignesVides > 0 :
                         self.lignesVides-=1
                     self.rechargementChat()
@@ -341,7 +348,7 @@ class Chat(object):
             # Si le message est trop long
             if len(ligne)>x :
                 texte = ligne[:x-1]
-
+            # Si le nom de l'utilisateur est le notre , on affiche le texte en gras
             if self.nomUtilisateur == utilisateur :
                 self.chatZone.addstr(y-1-self.messageNombre, 0, texte, curses.A_BOLD)
             else :
@@ -401,14 +408,17 @@ class Chat(object):
     def verificationCapteurs(self):
         while self.actif :
             time.sleep(0.1)
+            # Si on nous demande d'afficher la LED
             if self.afficherLed :
                 #self.gestionCapteurs.alumerLed()
                 print("j'allume la led")
                 self.afficherLed = False
+            # Si on nous demande d'afficher le nombre d'utilisateurs à l'écran
             if self.afficherEcran :
                 #self.gestionCapteurs.afficherMessage(str(self.nombreUtilisateurs))
                 print("J'affiche l'écran")
                 self.afficherEcran = False
+            # Si on nous demande d'éjecter les utilisateurs
             #if self.gestionCapteurs.boutonEstActif() :
                 #self.ejectionUtilisateurs()
 
@@ -420,6 +430,7 @@ class Chat(object):
     def verificationSiEstEnregistre(self):
         while self.actif :
             time.sleep(0.1)
+            # Si l'utilisateur n'est plus enregistré
             if not self.gestionUtilisateurs.estUnUtilisateurEnregistre(self.nomUtilisateur):
                 self.actif = False
 
@@ -446,6 +457,7 @@ class Chat(object):
         signal.signal(signal.SIGINT, self.stoper)
         # Aucun délai au clavier
         self.texteFenetre.nodelay(1)
+        # Ecoute des touches flèches du clavier
         self.texteFenetre.keypad(True)
         # Tant que le chat est actif
         while self.actif:
@@ -467,9 +479,8 @@ class Chat(object):
         self.supprimerUtilisateur()
         # Attendre que les threads se terminent
         time.sleep(0.1)
+        # Réinitialisation de l'état des délais
         self.texteFenetre.nodelay(0)
-
-
         # Afficher le dernier nombre d'utilisateurs
         #self.gestionCapteurs.afficherMessage(str(nombreUtilisateurs-1))
         # Nettoyer l'écran
