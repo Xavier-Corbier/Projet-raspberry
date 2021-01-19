@@ -1,6 +1,6 @@
 import curses, threading,curses.textpad,signal,time,os
 from plugins import pluginGestionMessages as pgm, pluginGestionUtilisateurs as pgu, pluginFenetreOption as pfo
-#from plugins import pluginGestionCapteurs as pgc
+from plugins import pluginGestionCapteurs as pgc
 
 # Class qui permet le fonctionnement général du chat (envoi / récupération messages, gestion utilisateurs, affichage)
 
@@ -20,7 +20,7 @@ class Chat(object):
         self.gestionMessages = pgm.GestionMessages()
         self.gestionUtilisateurs = pgu.GestionUtilisateurs()
         # Plugin gestion des capteurs
-        #self.gestionCapteurs = pgc.GestionCapteurs()
+        self.gestionCapteurs = pgc.GestionCapteurs()
         # Création du mutex
         self.mutex=threading.Lock()
         # Nettoyer l'écran
@@ -410,17 +410,17 @@ class Chat(object):
             time.sleep(0.1)
             # Si on nous demande d'afficher la LED
             if self.afficherLed :
-                #self.gestionCapteurs.alumerLed()
-                print("j'allume la led")
+                self.gestionCapteurs.alumerLed()
+                #print("j'allume la led")
                 self.afficherLed = False
             # Si on nous demande d'afficher le nombre d'utilisateurs à l'écran
             if self.afficherEcran :
-                #self.gestionCapteurs.afficherMessage(str(self.nombreUtilisateurs))
-                print("J'affiche l'écran")
+                self.gestionCapteurs.afficherMessage(str(self.gestionUtilisateurs.nombreUtilisateursEnregistres()))
+                #print("J'affiche l'écran")
                 self.afficherEcran = False
             # Si on nous demande d'éjecter les utilisateurs
-            #if self.gestionCapteurs.boutonEstActif() :
-                #self.ejectionUtilisateurs()
+            if self.gestionCapteurs.boutonEstActif() :
+                self.ejectionUtilisateurs()
 
     # Vérifie si l'utilisateur est enregistré
     # Précondition :
@@ -472,8 +472,6 @@ class Chat(object):
     # Résultat :
     # - Le chat est stoppé
     def stoper(self,signum=None, frame=None):
-        # sauvegarde du dernier nombre d'utulisateurs
-        nombreUtilisateurs = self.nombreUtilisateurs
         # Fermeture du chat
         self.actif=False
         self.supprimerUtilisateur()
@@ -482,7 +480,7 @@ class Chat(object):
         # Réinitialisation de l'état des délais
         self.texteFenetre.nodelay(0)
         # Afficher le dernier nombre d'utilisateurs
-        #self.gestionCapteurs.afficherMessage(str(nombreUtilisateurs-1))
+        self.gestionCapteurs.afficherMessage(str(self.gestionUtilisateurs.nombreUtilisateursEnregistres()))
         # Nettoyer l'écran
         self.stdscr.clear()
         # Fermeture de la fenètre
