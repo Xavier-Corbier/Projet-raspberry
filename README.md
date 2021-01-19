@@ -12,7 +12,7 @@ Il est recommandé d’utiliser le modèle pi 3. Les autres modèles de Raspberr
 
 ## Manuel utilisateur
 Il est recommandé de prendre connaissance du manuel utilisateur avant d'installer le programme. Il est accessible via ce [lien](https://drive.google.com/file/d/1eSBRO9VaJzS6IjLgt6G3f9GXIjQUDZNd/view?usp=sharing)
-**ERRATUM : le programme de GrovePi+ doit être quand même installer même si on ne le possède pas. Dans le cas contraire, le programme plante lors de l'import des librairie**
+**ERRATUM : le programme de GrovePi+ doit être quand même installé même si on ne le possède pas. Dans le cas contraire, le programme plante lors de l'import des librairies**
 ## Installation
 
 Vous pouvez installer le programme sur votre raspberry via la commande :
