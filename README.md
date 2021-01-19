@@ -2,7 +2,7 @@
 ### Polytech Montpellier – Informatique et Gestion
 
 * **Groupe :** Alizée Gouget, [Xavier Corbier](https://xaviercorbier.fr)
-* **Matière :** ASASIoT
+* **Matière :** ASAIoT
 
 # Projet Raspberry - Chat entre utilisateurs d'un même raspberry
 
