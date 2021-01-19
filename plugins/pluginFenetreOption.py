@@ -47,9 +47,9 @@ class FenetreOption(object):
         # Création des fenètres de l'écran
         try :
             if boolReponse :
-                self.titreFenetre = curses.newwin(self.maxY-int(self.maxY * 0.1)-2, self.maxX, 0, 0)
-                self.texteFenetre = curses.newwin(int(self.maxY * 0.1),self.maxX ,self.maxY - int(self.maxY * 0.1),0)
-                self.texteZone = curses.newwin(int(self.maxY * 0.1)  -3  ,self.maxX  -3 ,self.maxY - int(self.maxY * 0.1) + 2, + 2)
+                self.titreFenetre = curses.newwin(self.maxY-int(self.maxY * 0.3)-2, self.maxX, 0, 0)
+                self.texteFenetre = curses.newwin(int(self.maxY * 0.3),self.maxX ,self.maxY - int(self.maxY * 0.3),0)
+                self.texteZone = curses.newwin(int(self.maxY * 0.3)  -3  ,self.maxX  -3 ,self.maxY - int(self.maxY * 0.3) + 2, + 2)
             else :
                 self.titreFenetre = curses.newwin(self.maxY, self.maxX, 0, 0)
 
@@ -167,6 +167,7 @@ class FenetreOption(object):
         while self.actif:
             # On récupère les caractères saisie au clavier et on les traitent
             if self.boolReponse:
+                self.texteZone.nodelay(0)
                 caractere = self.texteZone.getch()
                 self.message(caractere)
         # Retourne la réponse à la question
