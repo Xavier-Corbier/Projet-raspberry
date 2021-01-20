@@ -379,12 +379,7 @@ class Chat(object):
             if self.utilisateurIndice != len(listeUtilisateurs) :
                 with self.mutex :
                     self.rechargementUtilisateur()
-                    resultat = False
-                    for user in listeUtilisateurs:
-                        if user == self.nomUtilisateur :
-                            resultat = True
-                    if not resultat :
-                        self.actif = False
+
 
     # Ajout le nom de l'utilisateur au chat
     # Résultat :
