@@ -408,7 +408,7 @@ class Chat(object):
     # - Les capteurs sont contrôlé
     def verificationCapteurs(self):
         while self.actif :
-            time.sleep(0.1)
+
             # Si on nous demande d'afficher la LED
             if self.afficherLed :
                 self.gestionCapteurs.alumerLed()

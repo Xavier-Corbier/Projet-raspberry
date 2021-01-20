@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from drivers.grovepi import *
-
+import time
 # Connecte le Grove Switch au port digital D3
 BOUTON_PORT = 3
 
@@ -19,4 +19,5 @@ def initBouton():
 # Résultat :
 # - Boolean : True si le bouton est actif sinon False
 def boutonActif():
+	time.sleep(0.1)
 	return digitalRead(BOUTON_PORT)

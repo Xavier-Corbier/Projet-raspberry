@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from drivers.grovepi import *
-
+import time
 # Connecte la LED au port digital D2
 LED_PORT = 2
 
@@ -19,4 +19,5 @@ def initLED():
 # Résultat :
 # - LED affecté
 def setValeurLED(valeur):
+    time.sleep(0.1)
     digitalWrite(LED_PORT,valeur)
