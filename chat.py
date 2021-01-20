@@ -146,20 +146,20 @@ class Chat(object):
         self.messageNombre = 0
         with self.verouMessages :
             listeMessage = self.gestionMessages.listeDesMessages()
-        # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
-        while self.messageNombre  < y - self.lignesVides  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
-            message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
-            try :
-                self.afficherMessage(message[0],message[1])
-            except Exception :
-                self.messageNombre+=1
-                pass
-        self.messageNombreHistorique = len(listeMessage)-self.messageNombre
-        # Si la liste des messages n'est pas vide
-        if len(listeMessage)!=0:
-            # Si le dernier message n'est pas celui de pi
-            if listeMessage[self.messageNombre-1][0] !="pi" and listeMessage[self.messageNombre-1][0] != "" and listeMessage[self.messageNombre-1][1]!="" :
-                self.afficherLed=True
+            # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
+            while self.messageNombre  < y - self.lignesVides  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
+                message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
+                try :
+                    self.afficherMessage(message[0],message[1])
+                except Exception :
+                    self.messageNombre+=1
+                    pass
+            self.messageNombreHistorique = len(listeMessage)-self.messageNombre
+            # Si la liste des messages n'est pas vide
+            if len(listeMessage)!=0:
+                # Si le dernier message n'est pas celui de pi
+                if listeMessage[self.messageNombre-1][0] !="pi" and listeMessage[self.messageNombre-1][0] != "" and listeMessage[self.messageNombre-1][1]!="" :
+                    self.afficherLed=True
 
     # Recharge la partie utilisateur du chat
     # Résultat :
@@ -316,13 +316,13 @@ class Chat(object):
             # On récupère la liste des utilisateurs
             with self.verouMessages:
                 listeMessage = self.gestionMessages.listeDesMessages()
-            # Si le nombre est différent de celui que l'on connait et si on remonte pas des messages
-            if self.messageNombre + self.messageNombreHistorique != len(listeMessage) and self.nombreMessageRemoter==0:
-                with self.verouAffichage :
-                    # Si on avait des lignes vides on en supprime une
-                    if self.lignesVides > 0 :
-                        self.lignesVides-=1
-                    self.rechargementChat()
+                # Si le nombre est différent de celui que l'on connait et si on remonte pas des messages
+                if self.messageNombre + self.messageNombreHistorique != len(listeMessage) and self.nombreMessageRemoter==0:
+                    with self.verouAffichage :
+                        # Si on avait des lignes vides on en supprime une
+                        if self.lignesVides > 0 :
+                            self.lignesVides-=1
+                        self.rechargementChat()
 
     # Envoie le message écrit sur le chat
     # Résultat :
@@ -381,10 +381,10 @@ class Chat(object):
             # On récupère la liste des utilisateurs
             with self.verouUtilisateurs :
                 listeUtilisateurs=self.gestionUtilisateurs.listeDesUtilisateurs()
-            # Si le nombre est différent de celui que l'on connait
-            if self.utilisateurIndice != len(listeUtilisateurs) :
-                with self.verouAffichage :
-                    self.rechargementUtilisateur()
+                # Si le nombre est différent de celui que l'on connait
+                if self.utilisateurIndice != len(listeUtilisateurs) :
+                    with self.verouAffichage :
+                        self.rechargementUtilisateur()
 
     # Ajout le nom de l'utilisateur au chat
     # Résultat :
