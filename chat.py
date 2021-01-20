@@ -408,20 +408,20 @@ class Chat(object):
     # - Les capteurs sont contrôlé
     def verificationCapteurs(self):
         while self.actif :
-
-            # Si on nous demande d'afficher la LED
-            if self.afficherLed :
-                self.gestionCapteurs.alumerLed()
-                #print("j'allume la led")
-                self.afficherLed = False
-            # Si on nous demande d'afficher le nombre d'utilisateurs à l'écran
-            if self.afficherEcran :
-                self.gestionCapteurs.afficherMessage(str(self.gestionUtilisateurs.nombreUtilisateursEnregistres()))
-                #print("J'affiche l'écran")
-                self.afficherEcran = False
-            # Si on nous demande d'éjecter les utilisateurs
-            if self.gestionCapteurs.boutonEstActif() :
-                self.ejectionUtilisateurs()
+            if self.nomUtilisateur == "pi" :
+                # Si on nous demande d'afficher la LED
+                if self.afficherLed :
+                    self.gestionCapteurs.alumerLed()
+                    #print("j'allume la led")
+                    self.afficherLed = False
+                # Si on nous demande d'afficher le nombre d'utilisateurs à l'écran
+                if self.afficherEcran :
+                    self.gestionCapteurs.afficherMessage(str(self.gestionUtilisateurs.nombreUtilisateursEnregistres()))
+                    #print("J'affiche l'écran")
+                    self.afficherEcran = False
+                # Si on nous demande d'éjecter les utilisateurs
+                if self.gestionCapteurs.boutonEstActif() :
+                    self.ejectionUtilisateurs()
 
     # Vérifie si l'utilisateur est enregistré
     # Précondition :
