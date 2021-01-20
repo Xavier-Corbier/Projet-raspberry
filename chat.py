@@ -409,7 +409,7 @@ class Chat(object):
     # - Les capteurs sont contrôlé
     def verificationCapteurs(self):
         while self.actif :
-            if self.nomUtilisateur == "pi" :
+            if os.environ["USER"] == "pi" :
                 # Si on nous demande d'afficher la LED
                 if self.afficherLed :
                     self.gestionCapteurs.alumerLed()
