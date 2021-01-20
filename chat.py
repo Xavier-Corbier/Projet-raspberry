@@ -21,10 +21,8 @@ class Chat(object):
         self.gestionUtilisateurs = pgu.GestionUtilisateurs()
         # Plugin gestion des capteurs
         self.gestionCapteurs = pgc.GestionCapteurs()
-        # Création du verou Affichage
-        self.verouAffichage=threading.Lock()
-        self.verouUtilisateurs=threading.Lock()
-        self.verouMessages=threading.Lock()
+        # Création du mutex
+        self.mutex=threading.Lock()
         # Nettoyer l'écran
         self.stdscr.clear()
 
@@ -144,22 +142,21 @@ class Chat(object):
         y, x = self.chatZone.getmaxyx()
         # Rechargement de la liste des messages
         self.messageNombre = 0
-        with self.verouMessages :
-            listeMessage = self.gestionMessages.listeDesMessages()
-            # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
-            while self.messageNombre  < y - self.lignesVides  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
-                message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
-                try :
-                    self.afficherMessage(message[0],message[1])
-                except Exception :
-                    self.messageNombre+=1
-                    pass
-            self.messageNombreHistorique = len(listeMessage)-self.messageNombre
-            # Si la liste des messages n'est pas vide
-            if len(listeMessage)!=0:
-                # Si le dernier message n'est pas celui de pi
-                if listeMessage[self.messageNombre-1][0] !="pi" and listeMessage[self.messageNombre-1][0] != "" and listeMessage[self.messageNombre-1][1]!="" :
-                    self.afficherLed=True
+        listeMessage = self.gestionMessages.listeDesMessages()
+        # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
+        while self.messageNombre  < y - self.lignesVides  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
+            message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
+            try :
+                self.afficherMessage(message[0],message[1])
+            except Exception :
+                self.messageNombre+=1
+                pass
+        self.messageNombreHistorique = len(listeMessage)-self.messageNombre
+        # Si la liste des messages n'est pas vide
+        if len(listeMessage)!=0:
+            # Si le dernier message n'est pas celui de pi
+            if listeMessage[self.messageNombre-1][0] !="pi" and listeMessage[self.messageNombre-1][0] != "" and listeMessage[self.messageNombre-1][1]!="" :
+                self.afficherLed=True
 
     # Recharge la partie utilisateur du chat
     # Résultat :
@@ -266,7 +263,7 @@ class Chat(object):
                     if self.nombreMessageRemoter < self.messageNombre + self.messageNombreHistorique - 1 :
                         self.nombreMessageRemoter +=1
                         self.lignesVides = 0
-                    with self.verouAffichage:
+                    with self.mutex:
                         self.rechargementChat()
                 # Si on veut accéder aux messages suivant
                 elif char==curses.KEY_DOWN :
@@ -274,14 +271,14 @@ class Chat(object):
                     if self.nombreMessageRemoter > 0:
                         self.nombreMessageRemoter -=1
                         self.lignesVides = 0
-                    with self.verouAffichage:
+                    with self.mutex:
                         self.rechargementChat()
                 # Sinon on ajoute le caractère à l'écran
                 else:
                     y, x = self.chatZone.getmaxyx()
                     if len(self.text)+1 < x:
                         self.text += chr(char)
-                    with self.verouAffichage:
+                    with self.mutex:
                         self.rechargementTexteZone()
                     return
             # Si on est pas actif on s'arrête
@@ -297,7 +294,7 @@ class Chat(object):
         # On supprime le dernier caractère
         self.text = self.text[:-1]
         self.texteZone.clear()
-        with self.verouAffichage :
+        with self.mutex :
             self.rechargementTexteZone()
 
     ##
@@ -314,15 +311,14 @@ class Chat(object):
             # Delai de 0.1 pour économiser les calculs
             time.sleep(0.1)
             # On récupère la liste des utilisateurs
-            with self.verouMessages:
-                listeMessage = self.gestionMessages.listeDesMessages()
-                # Si le nombre est différent de celui que l'on connait et si on remonte pas des messages
-                if self.messageNombre + self.messageNombreHistorique != len(listeMessage) and self.nombreMessageRemoter==0:
-                    with self.verouAffichage :
-                        # Si on avait des lignes vides on en supprime une
-                        if self.lignesVides > 0 :
-                            self.lignesVides-=1
-                        self.rechargementChat()
+            listeMessage = self.gestionMessages.listeDesMessages()
+            # Si le nombre est différent de celui que l'on connait et si on remonte pas des messages
+            if self.messageNombre + self.messageNombreHistorique != len(listeMessage) and self.nombreMessageRemoter==0:
+                with self.mutex :
+                    # Si on avait des lignes vides on en supprime une
+                    if self.lignesVides > 0 :
+                        self.lignesVides-=1
+                    self.rechargementChat()
 
     # Envoie le message écrit sur le chat
     # Résultat :
@@ -331,12 +327,11 @@ class Chat(object):
         # Réinitialisation de la zonne de texte
         message = self.text
         self.text = ""
-        with self.verouAffichage :
+        with self.mutex :
             self.rechargementTexteZone()
         # Si le message n'est pas vide
         if message !="":
-            with self.verouMessages:
-                self.gestionMessages.envoyerMessage(self.nomUtilisateur,message)
+            self.gestionMessages.envoyerMessage(self.nomUtilisateur,message)
 
     # Affiche un messages sur la partie chat du chat
     # Précondition :
@@ -360,7 +355,7 @@ class Chat(object):
                 self.chatZone.addstr(y-1-self.messageNombre, 0, texte)
 
         except Exception:
-            with self.verouAffichage :
+            with self.mutex :
                 self.rechargementChat()
         self.chatZone.refresh()
         self.messageNombre+=1
@@ -379,12 +374,17 @@ class Chat(object):
             # Delai de 0.1 pour économiser les calculs
             time.sleep(0.1)
             # On récupère la liste des utilisateurs
-            with self.verouUtilisateurs :
-                listeUtilisateurs=self.gestionUtilisateurs.listeDesUtilisateurs()
-                # Si le nombre est différent de celui que l'on connait
-                if self.utilisateurIndice != len(listeUtilisateurs) :
-                    with self.verouAffichage :
-                        self.rechargementUtilisateur()
+            listeUtilisateurs=self.gestionUtilisateurs.listeDesUtilisateurs()
+            # Si le nombre est différent de celui que l'on connait
+            if self.utilisateurIndice != len(listeUtilisateurs) :
+                with self.mutex :
+                    self.rechargementUtilisateur()
+                    resultat = False
+                    for user in listeUtilisateurs:
+                        if user == self.nomUtilisateur :
+                            resultat = True
+                    if not resultat :
+                        self.actif = False
 
     # Ajout le nom de l'utilisateur au chat
     # Résultat :
@@ -400,8 +400,7 @@ class Chat(object):
 
     # Ejecte tout les utilisateurs
     def ejectionUtilisateurs(self):
-        with self.verouUtilisateurs:
-            self.gestionUtilisateurs.initialisationNombreUtilisateurs()
+        self.gestionUtilisateurs.initialisationNombreUtilisateurs()
 
     ##
     #   PARTIE VERIFICATION
@@ -438,9 +437,8 @@ class Chat(object):
         while self.actif :
             time.sleep(0.1)
             # Si l'utilisateur n'est plus enregistré
-            with self.verouUtilisateurs:
-                if not self.gestionUtilisateurs.estUnUtilisateurEnregistre(self.nomUtilisateur):
-                    self.actif = False
+            if not self.gestionUtilisateurs.estUnUtilisateurEnregistre(self.nomUtilisateur):
+                self.actif = False
 
     ##
     #   PARTIE ACTIVITE PROGRAMME
@@ -458,7 +456,7 @@ class Chat(object):
         threading.Thread(target=self.recupererMessages).start()
         threading.Thread(target=self.recupererUtilisateurs).start()
         threading.Thread(target=self.verificationCapteurs).start()
-        threading.Thread(target=self.verificationSiEstEnregistre).start()
+        #threading.Thread(target=self.verificationSiEstEnregistre).start()
         # Demande d'afficher le nombre d'utilisateur à l'écran
         self.afficherEcran=True
         # Ajout du signal pour stopper avec un ctrl + C
@@ -500,4 +498,3 @@ class Chat(object):
 # Cette méthode est utilisé pour les test de Chat.py
 if __name__ == "__main__":
     print("test programme")
-
