@@ -41,6 +41,8 @@ echo "Installation en cours ..."
   ## autorisation d'écritures de données
   sudo chmod 777 /home/chat/Projet-raspberry/données/messages.txt > /dev/null 2>&1
   sudo chmod 777 /home/chat/Projet-raspberry/données/utilisateurs.txt > /dev/null 2>&1
+  ## erreur i2c non comprise
+  sudo chmod 777 /dev/i2c-1
   echo "Installation terminé !"
 
 elif echo $commande | grep -q '^sudo:'; then
