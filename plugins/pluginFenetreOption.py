@@ -186,4 +186,6 @@ class FenetreOption(object):
         curses.echo()
         curses.nocbreak()
         curses.endwin()
+        self.stdscr.refresh()
+        self.stdscr.clear()
 
