@@ -377,6 +377,7 @@ class Chat(object):
             listeUtilisateurs=self.gestionUtilisateurs.listeDesUtilisateurs()
             # Si le nombre est différent de celui que l'on connait
             if self.utilisateurIndice != len(listeUtilisateurs) :
+                self.afficherEcran = True
                 with self.mutex :
                     self.rechargementUtilisateur()
 
