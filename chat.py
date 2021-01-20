@@ -451,7 +451,7 @@ class Chat(object):
         threading.Thread(target=self.recupererMessages).start()
         threading.Thread(target=self.recupererUtilisateurs).start()
         threading.Thread(target=self.verificationCapteurs).start()
-        #threading.Thread(target=self.verificationSiEstEnregistre).start()
+        threading.Thread(target=self.verificationSiEstEnregistre).start()
         # Demande d'afficher le nombre d'utilisateur à l'écran
         self.afficherEcran=True
         # Ajout du signal pour stopper avec un ctrl + C
