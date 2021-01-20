@@ -24,6 +24,7 @@ class Chat(object):
         # Création du verou Affichage
         self.verouAffichage=threading.Lock()
         self.verouUtilisateurs=threading.Lock()
+        self.verouMessages=threading.Lock()
         # Nettoyer l'écran
         self.stdscr.clear()
 
@@ -143,7 +144,8 @@ class Chat(object):
         y, x = self.chatZone.getmaxyx()
         # Rechargement de la liste des messages
         self.messageNombre = 0
-        listeMessage = self.gestionMessages.listeDesMessages()
+        with self.verouMessages :
+            listeMessage = self.gestionMessages.listeDesMessages()
         # Tant que le nombre de message ne dépasse pas l'écran et qu'il est inférieur aux nombres de messages enregistré (moins le nombre de message remonté)
         while self.messageNombre  < y - self.lignesVides  and self.messageNombre  <len(listeMessage)-1 - self.nombreMessageRemoter:
             message = listeMessage[len(listeMessage)-2-self.messageNombre-self.nombreMessageRemoter]
@@ -312,7 +314,8 @@ class Chat(object):
             # Delai de 0.1 pour économiser les calculs
             time.sleep(0.1)
             # On récupère la liste des utilisateurs
-            listeMessage = self.gestionMessages.listeDesMessages()
+            with self.verouMessages:
+                listeMessage = self.gestionMessages.listeDesMessages()
             # Si le nombre est différent de celui que l'on connait et si on remonte pas des messages
             if self.messageNombre + self.messageNombreHistorique != len(listeMessage) and self.nombreMessageRemoter==0:
                 with self.verouAffichage :
@@ -332,7 +335,8 @@ class Chat(object):
             self.rechargementTexteZone()
         # Si le message n'est pas vide
         if message !="":
-            self.gestionMessages.envoyerMessage(self.nomUtilisateur,message)
+            with self.verouMessages:
+                self.gestionMessages.envoyerMessage(self.nomUtilisateur,message)
 
     # Affiche un messages sur la partie chat du chat
     # Précondition :
